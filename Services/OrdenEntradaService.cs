@@ -55,16 +55,17 @@ namespace AppAPIEmpacadora.Services
                 Proveedor = proveedor,
                 Producto = producto,
                 FechaEstimada = dto.FechaEstimada,
-                FechaRegistro = DateTime.UtcNow,
+                FechaRegistro = dto.FechaRegistro,
+                UsuarioRegistro = usuarioRegistro,
                 Estado = dto.Estado,
                 Observaciones = dto.Observaciones
             };
 
-            await _ordenEntradaRepository.CrearOrdenEntradaAsync(ordenEntrada, usuarioRegistro);
+            await _ordenEntradaRepository.CrearOrdenEntradaAsync(ordenEntrada);
             return ordenEntrada;
         }
 
-        public async Task<OrdenEntradaDTO> ActualizarOrdenEntradaAsync(string codigo, CrearOrdenEntradaDTO dto, string usuarioModificacion)
+        public async Task<OrdenEntradaDTO> ActualizarOrdenEntradaAsync(string codigo, ActualizarOrdenEntradaDTO dto, string usuarioModificacion)
         {
             var orden = await _ordenEntradaRepository.ObtenerOrdenEntradaPorCodigoAsync(codigo);
             if (orden == null)
@@ -81,6 +82,8 @@ namespace AppAPIEmpacadora.Services
             orden.Proveedor = proveedor;
             orden.Producto = producto;
             orden.FechaEstimada = dto.FechaEstimada;
+            orden.FechaRecepcion = dto.FechaRecepcion;
+            orden.UsuarioRecepcion = dto.FechaRecepcion == null ? orden.UsuarioRecepcion : usuarioModificacion;
             orden.Estado = dto.Estado;
             orden.Observaciones = dto.Observaciones;
 
@@ -125,6 +128,7 @@ namespace AppAPIEmpacadora.Services
             if (tarima == null)
                 return false;
 
+            tarima.CodigoOrden = codigo;
             tarima.PesoBruto = dto.PesoBruto;
             tarima.PesoTara = dto.PesoTara;
             tarima.PesoTarima = dto.PesoTarima;
@@ -162,4 +166,4 @@ namespace AppAPIEmpacadora.Services
             return await _ordenEntradaRepository.CrearTarimaAsync(codigoOrden, tarima);
         }
     }
-} 
+}

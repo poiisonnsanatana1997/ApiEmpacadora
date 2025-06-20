@@ -10,8 +10,14 @@ using AppAPIEmpacadora.Repositories;
 using AppAPIEmpacadora.Repositories.Interfaces;
 using AppAPIEmpacadora.Services;
 using AppAPIEmpacadora.Services.Interfaces;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuración de cultura global para decimales con punto
+var cultureInfo = new CultureInfo("en-US");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -57,8 +63,8 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 
 // Registro de repositorios
 builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<AppAPIEmpacadora.Repositories.Interfaces.IProductRepository, AppAPIEmpacadora.Infrastructure.Repositories.ProductRepository>();
-builder.Services.AddScoped<AppAPIEmpacadora.Repositories.Interfaces.IOrdenEntradaRepository, AppAPIEmpacadora.Infrastructure.Repositories.OrdenEntradaRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
+builder.Services.AddScoped<IOrdenEntradaRepository, OrdenEntradaRepository>();
 builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
 
 // Registro de servicios
@@ -91,10 +97,18 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirTodo", policy =>
     {
-        policy.AllowAnyOrigin()
+        policy.SetIsOriginAllowed(origin => true) // Permite cualquier origen dinámicamente
               .AllowAnyHeader()
-              .AllowAnyMethod();
+              .AllowAnyMethod()
+              .AllowCredentials();
     });
+});
+
+// Configurar controladores para manejar CORS
+builder.Services.AddControllers(options =>
+{
+    // Configurar para manejar OPTIONS preflight
+    options.SuppressAsyncSuffixInActionNames = false;
 });
 
 var app = builder.Build();
@@ -112,7 +126,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Usar la política de CORS antes de autenticación y autorización
+// Mover el middleware de CORS antes de cualquier otro middleware
 app.UseCors("PermitirTodo");
 
 // Agregar middleware de autenticación y autorización

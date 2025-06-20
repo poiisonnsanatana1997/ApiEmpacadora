@@ -32,11 +32,16 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                     Producto = new ProductoSimpleDTO
                     {
                         Id = pp.Producto.Id,
-                        Nombre = pp.Producto.Nombre
+                        Nombre = pp.Producto.Nombre,
+                        Codigo = pp.Producto.Codigo,
+                        Variedad = pp.Producto.Variedad
+
                     },
                     FechaEstimada = p.FechaEstimada,
                     FechaRegistro = p.FechaRegistro,
                     FechaRecepcion = p.FechaRecepcion,
+                    UsuarioRecepcion = p.UsuarioRecepcion,
+                    UsuarioRegistro = p.UsuarioRegistro,
                     Estado = p.Estado,
                     Observaciones = p.Observaciones
                 }))
@@ -61,11 +66,15 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                     Producto = new ProductoSimpleDTO
                     {
                         Id = pp.Producto.Id,
-                        Nombre = pp.Producto.Nombre
+                        Nombre = pp.Producto.Nombre,
+                        Codigo = pp.Producto.Codigo,
+                        Variedad = pp.Producto.Variedad
                     },
                     FechaEstimada = p.FechaEstimada,
                     FechaRegistro = p.FechaRegistro,
                     FechaRecepcion = p.FechaRecepcion,
+                    UsuarioRecepcion = p.UsuarioRecepcion,
+                    UsuarioRegistro = p.UsuarioRegistro,
                     Estado = p.Estado,
                     Observaciones = p.Observaciones
                 }))
@@ -90,18 +99,22 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                     Producto = new ProductoSimpleDTO
                     {
                         Id = pp.Producto.Id,
-                        Nombre = pp.Producto.Nombre
+                        Nombre = pp.Producto.Nombre,
+                        Codigo = pp.Producto.Codigo,
+                        Variedad = pp.Producto.Variedad
                     },
                     FechaEstimada = p.FechaEstimada,
                     FechaRegistro = p.FechaRegistro,
                     FechaRecepcion = p.FechaRecepcion,
+                    UsuarioRecepcion = p.UsuarioRecepcion,
+                    UsuarioRegistro = p.UsuarioRegistro,
                     Estado = p.Estado,
                     Observaciones = p.Observaciones
                 }))
                 .FirstOrDefaultAsync();
         }
 
-        public async Task CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada, string usuarioRegistro)
+        public async Task CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada)
         {
             var pedido = new PedidoProveedor
             {
@@ -112,7 +125,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 FechaRegistro = ordenEntrada.FechaRegistro,
                 FechaEstimada = ordenEntrada.FechaEstimada,
                 FechaRecepcion = ordenEntrada.FechaRecepcion,
-                UsuarioRegistro = usuarioRegistro,
+                UsuarioRegistro = ordenEntrada.UsuarioRegistro,
                 ProductosPedido = new List<ProductoPedido>
                 {
                     new ProductoPedido
@@ -127,31 +140,59 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
 
         public async Task<bool> ActualizarOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada)
         {
-            var pedido = await _context.PedidosProveedor
-                .Include(p => p.ProductosPedido)
-                .FirstOrDefaultAsync(p => p.Codigo == ordenEntrada.Codigo);
 
-            if (pedido == null)
-                return false;
-
-            pedido.IdProveedor = ordenEntrada.Proveedor.Id;
-            pedido.Estado = ordenEntrada.Estado;
-            pedido.Observaciones = ordenEntrada.Observaciones;
-            pedido.FechaEstimada = ordenEntrada.FechaEstimada;
-            pedido.FechaRecepcion = ordenEntrada.FechaRecepcion;
-
-            // Actualizar producto (asumiendo solo uno por orden)
-            if (pedido.ProductosPedido.Any())
+            using var transaction = await _context.Database.BeginTransactionAsync();
+            try
             {
-                pedido.ProductosPedido.First().IdProducto = ordenEntrada.Producto.Id;
-            }
-            else
-            {
-                pedido.ProductosPedido.Add(new ProductoPedido { IdProducto = ordenEntrada.Producto.Id });
-            }
+                var pedido = await _context.PedidosProveedor
+                                .Include(p => p.ProductosPedido)
+                                .FirstOrDefaultAsync(p => p.Codigo == ordenEntrada.Codigo);
 
-            await _context.SaveChangesAsync();
-            return true;
+                if (pedido == null)
+                {
+                    await transaction.RollbackAsync();
+                    return false;
+                }
+
+                // Actualizar datos básicos del pedido
+                pedido.IdProveedor = ordenEntrada.Proveedor.Id;
+                pedido.Estado = ordenEntrada.Estado;
+                pedido.Observaciones = ordenEntrada.Observaciones;
+                pedido.FechaEstimada = ordenEntrada.FechaEstimada;
+                pedido.FechaRecepcion = ordenEntrada.FechaRecepcion;
+                pedido.UsuarioRecepcion = ordenEntrada.UsuarioRecepcion;
+
+                // Manejar la actualización de productos
+                if (pedido.ProductosPedido.Any())
+                {
+                    _context.ProductosPedido.RemoveRange(pedido.ProductosPedido);
+                }
+
+                pedido.ProductosPedido.Add(new ProductoPedido 
+                { 
+                    IdProducto = ordenEntrada.Producto.Id,
+                    IdPedidoProveedor = pedido.Id
+                });
+
+                await _context.SaveChangesAsync();
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                await transaction.RollbackAsync();
+                throw new InvalidOperationException("La orden ha sido modificada por otro usuario. Por favor, actualice la página e intente nuevamente.", ex);
+            }
+            catch (DbUpdateException ex)
+            {
+                await transaction.RollbackAsync();
+                throw new InvalidOperationException("Error al actualizar la orden en la base de datos. Por favor, verifique los datos e intente nuevamente.", ex);
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                throw new InvalidOperationException("Error inesperado al actualizar la orden.", ex);
+            }
         }
 
         public async Task<bool> EliminarOrdenEntradaAsync(string codigo)
@@ -192,11 +233,15 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 Producto = new ProductoSimpleDTO
                 {
                     Id = pp.Producto.Id,
-                    Nombre = pp.Producto.Nombre
+                    Nombre = pp.Producto.Nombre,
+                    Codigo = pp.Producto.Codigo,
+                    Variedad = pp.Producto.Variedad
                 },
                 FechaEstimada = pedido.FechaEstimada,
                 FechaRegistro = pedido.FechaRegistro,
                 FechaRecepcion = pedido.FechaRecepcion,
+                UsuarioRecepcion = pedido.UsuarioRecepcion,
+                UsuarioRegistro = pedido.UsuarioRegistro,
                 Estado = pedido.Estado,
                 Observaciones = pedido.Observaciones
             }).FirstOrDefault();
@@ -247,6 +292,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .Select(t => new TarimaDTO
                 {
                     Numero = t.Codigo,
+                    CodigoOrden = t.PedidoProveedor.Codigo,
                     PesoBruto = t.PesoBruto,
                     PesoTara = t.PesoTara,
                     PesoTarima = t.PesoTarima,
@@ -262,7 +308,8 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
         public async Task<bool> ActualizarTarimaAsync(TarimaDTO tarima)
         {
             var tarimaEntity = await _context.CantidadesPedido
-                .FirstOrDefaultAsync(t => t.Codigo == tarima.Numero);
+                .Include(t => t.PedidoProveedor)
+                .FirstOrDefaultAsync(t => t.Codigo == tarima.Numero && t.PedidoProveedor.Codigo == tarima.CodigoOrden);
 
             if (tarimaEntity == null)
                 return false;
@@ -304,7 +351,8 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
 
         public async Task<int> ObtenerCantidadPendientesHoyAsync()
         {
-            var hoy = DateTime.UtcNow.Date;
+            var hoy = DateTime.Now.Date;
+
             return await _context.PedidosProveedor
                 .Where(p => p.FechaEstimada.Date == hoy && p.Estado == "Pendiente")
                 .CountAsync();
@@ -332,10 +380,11 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             };
             _context.CantidadesPedido.Add(nuevaTarima);
             await _context.SaveChangesAsync();
-            
+
             return new TarimaDTO
             {
                 Numero = nuevaTarima.Codigo,
+                CodigoOrden = codigoOrden,
                 PesoBruto = nuevaTarima.PesoBruto,
                 PesoTara = nuevaTarima.PesoTara,
                 PesoTarima = nuevaTarima.PesoTarima,
@@ -347,4 +396,4 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             };
         }
     }
-} 
+}

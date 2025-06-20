@@ -5,7 +5,9 @@ namespace AppAPIEmpacadora.Models.DTOs
     public class ProductoSimpleDTO
     {
         public int Id { get; set; }
+        public string Codigo { get; set; }
         public string Nombre { get; set; }
+        public string Variedad { get; set; }
     }
 
     public class ProductoResponseDTO
@@ -16,7 +18,7 @@ namespace AppAPIEmpacadora.Models.DTOs
         public string Variedad { get; set; }
         public string UnidadMedida { get; set; }
         public decimal Precio { get; set; }
-        public string Estatus { get; set; }
+        public bool Activo { get; set; }
         public string Imagen { get; set; }
         public DateTime FechaRegistro { get; set; }
         public DateTime? FechaActualizacion { get; set; }
@@ -45,6 +47,9 @@ namespace AppAPIEmpacadora.Models.DTOs
         [Required(ErrorMessage = "El precio es obligatorio")]
         public decimal Precio { get; set; }
 
+        [Required(ErrorMessage = "La fecha de registro es obligatoria")]
+        public DateTime Fecha { get; set; }
+
         public IFormFile? Imagen { get; set; }
     }
 
@@ -69,9 +74,11 @@ namespace AppAPIEmpacadora.Models.DTOs
         [Required(ErrorMessage = "El precio es obligatorio")]
         public decimal Precio { get; set; }
 
-        [Required(ErrorMessage = "El estatus es obligatorio")]
-        [StringLength(25, ErrorMessage = "El estatus no puede tener más de 25 caracteres")]
-        public string Estatus { get; set; }
+        [Required(ErrorMessage = "La fecha de registro es obligatoria")]
+        public DateTime Fecha { get; set; }
+
+        [Required(ErrorMessage = "El estado activo es obligatorio")]
+        public bool Activo { get; set; }
 
         public IFormFile? Imagen { get; set; }
     }

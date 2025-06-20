@@ -1,7 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using AppAPIEmpacadora.Models.DTOs;
 using AppAPIEmpacadora.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -24,7 +21,6 @@ namespace AppAPIEmpacadora.Controllers
         }
 
         [HttpGet]
-        [AllowAnonymous]
         public async Task<ActionResult<IEnumerable<ProductoSimpleDTO>>> Get()
         {
             var productos = await _productoService.ObtenerTodosAsync();
@@ -39,7 +35,6 @@ namespace AppAPIEmpacadora.Controllers
         }
 
         [HttpGet("{id}")]
-        [AllowAnonymous]
         public async Task<ActionResult<ProductoSimpleDTO>> GetById(int id)
         {
             var producto = await _productoService.ObtenerPorIdAsync(id);
@@ -69,7 +64,7 @@ namespace AppAPIEmpacadora.Controllers
         {
             try
             {
-                var usuarioRegistro = User.FindFirst(ClaimTypes.Name)?.Value ?? "sistema";
+                var usuarioRegistro = User.Identity.Name ?? "sistema";
                 var productoCreado = await _productService.CreateProductAsync(productoDto, usuarioRegistro);
                 return CreatedAtAction(nameof(GetDetalleById), new { id = productoCreado.Id }, productoCreado);
             }
@@ -80,7 +75,7 @@ namespace AppAPIEmpacadora.Controllers
         }
 
         [HttpPut("{id}")]
-        [Authorize(Roles = "Admin,Supervisor")]
+        //[Authorize(Roles = "Admin,Supervisor")]
         public async Task<ActionResult<ProductoResponseDTO>> Actualizar(int id, [FromForm] ActualizarProductoDTO productoDto)
         {
             try
@@ -100,7 +95,6 @@ namespace AppAPIEmpacadora.Controllers
         }
 
         [HttpDelete("{id}")]
-        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Eliminar(int id)
         {
             try

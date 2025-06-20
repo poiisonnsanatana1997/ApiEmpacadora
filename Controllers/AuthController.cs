@@ -36,6 +36,10 @@ namespace AppAPIEmpacadora.Controllers
             {
                 return Unauthorized(new { message = ex.Message });
             }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
-} 
+}

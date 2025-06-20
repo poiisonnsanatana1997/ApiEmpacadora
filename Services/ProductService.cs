@@ -38,8 +38,8 @@ namespace AppAPIEmpacadora.Services
                 Variedad = productoDto.Variedad,
                 UnidadMedida = productoDto.UnidadMedida,
                 Precio = productoDto.Precio,
-                FechaRegistro = DateTime.UtcNow,
-                Estatus = "Activo",
+                FechaRegistro = productoDto.Fecha,
+                Activo = true,
                 Imagen = null, // Se asigna después si hay imagen
                 UsuarioRegistro = usuarioRegistro
             };
@@ -81,7 +81,7 @@ namespace AppAPIEmpacadora.Services
             productoExistente.Variedad = productoDto.Variedad;
             productoExistente.UnidadMedida = productoDto.UnidadMedida;
             productoExistente.Precio = productoDto.Precio;
-            productoExistente.Estatus = productoDto.Estatus;
+            productoExistente.Activo = productoDto.Activo;
             productoExistente.FechaActualizacion = DateTime.UtcNow;
             productoExistente.UsuarioModificacion = usuarioModificacion;
 
@@ -137,6 +137,17 @@ namespace AppAPIEmpacadora.Services
 
         private ProductoResponseDTO MapToProductoResponseDTO(Producto producto)
         {
+            string imagenBase64 = null;
+            if (!string.IsNullOrEmpty(producto.Imagen))
+            {
+                string filePath = Path.Combine(_environment.WebRootPath, producto.Imagen.TrimStart('/'));
+                if (File.Exists(filePath))
+                {
+                    byte[] imageBytes = File.ReadAllBytes(filePath);
+                    imagenBase64 = Convert.ToBase64String(imageBytes);
+                }
+            }
+
             return new ProductoResponseDTO
             {
                 Id = producto.Id,
@@ -145,8 +156,8 @@ namespace AppAPIEmpacadora.Services
                 Variedad = producto.Variedad,
                 UnidadMedida = producto.UnidadMedida,
                 Precio = producto.Precio,
-                Estatus = producto.Estatus,
-                Imagen = producto.Imagen,
+                Activo = producto.Activo,
+                Imagen = imagenBase64,
                 FechaRegistro = producto.FechaRegistro,
                 FechaActualizacion = producto.FechaActualizacion,
                 UsuarioRegistro = producto.UsuarioRegistro,

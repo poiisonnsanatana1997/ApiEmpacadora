@@ -7,7 +7,7 @@ namespace AppAPIEmpacadora.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Authorize]
+    //[Authorize]
     public class UsersController : ControllerBase
     {
         private readonly IUserService _userService;
@@ -19,7 +19,6 @@ namespace AppAPIEmpacadora.Controllers
 
         // GET: api/users
         [HttpGet]
-        [Authorize(Roles = "admin")]
         public async Task<ActionResult<IEnumerable<UserResponseDTO>>> GetUsers()
         {
             var users = await _userService.GetAllAsync();
@@ -40,7 +39,7 @@ namespace AppAPIEmpacadora.Controllers
 
         // POST: api/users
         [HttpPost]
-        [Authorize(Roles = "admin")]
+        //[Authorize(Roles = "admin")]
         public async Task<ActionResult<UserResponseDTO>> CreateUser(UserCreateDTO userDto)
         {
             try
@@ -56,7 +55,6 @@ namespace AppAPIEmpacadora.Controllers
 
         // PUT: api/users/5
         [HttpPut("{id}")]
-        [Authorize(Roles = "admin")]
         public async Task<IActionResult> UpdateUser(int id, UserUpdateDTO userDto)
         {
             try
@@ -76,7 +74,6 @@ namespace AppAPIEmpacadora.Controllers
 
         // DELETE: api/users/5
         [HttpDelete("{id}")]
-        [Authorize(Roles = "admin")]
         public async Task<IActionResult> DeleteUser(int id)
         {
             try

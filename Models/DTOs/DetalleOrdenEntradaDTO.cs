@@ -11,6 +11,7 @@ namespace AppAPIEmpacadora.Models.DTOs
     public class TarimaDTO
     {
         public string Numero { get; set; }
+        public string? CodigoOrden { get; set; }
         public decimal PesoBruto { get; set; }
         public decimal? PesoTara { get; set; }
         public decimal? PesoTarima { get; set; }

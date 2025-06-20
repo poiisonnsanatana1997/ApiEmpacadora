@@ -23,8 +23,7 @@ namespace AppAPIEmpacadora.Models.Entities
 
         public decimal Precio { get; set; }
 
-        [StringLength(25)]
-        public string Estatus { get; set; }
+        public bool Activo { get; set; }
 
         [StringLength(250)]
         public string Imagen { get; set; }

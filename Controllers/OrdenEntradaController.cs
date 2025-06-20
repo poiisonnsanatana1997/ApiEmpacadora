@@ -60,7 +60,7 @@ namespace AppAPIEmpacadora.Controllers
         }
 
         [HttpPut("{codigo}")]
-        public async Task<ActionResult<OrdenEntradaDTO>> ActualizarOrdenEntrada(string codigo, [FromBody] CrearOrdenEntradaDTO dto)
+        public async Task<ActionResult<OrdenEntradaDTO>> ActualizarOrdenEntrada(string codigo, [FromBody] ActualizarOrdenEntradaDTO dto)
         {
             if (string.IsNullOrEmpty(codigo))
                 return BadRequest("El código de la orden es requerido");

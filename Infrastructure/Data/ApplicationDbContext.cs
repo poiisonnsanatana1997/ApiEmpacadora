@@ -135,7 +135,7 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.Property(e => e.Variedad).HasMaxLength(100);
                 entity.Property(e => e.UnidadMedida).HasMaxLength(20);
                 entity.Property(e => e.Precio).HasColumnType("decimal(18,2)");
-                entity.Property(e => e.Estatus).HasMaxLength(25);
+                entity.Property(e => e.Activo).IsRequired();
                 entity.Property(e => e.Imagen).HasMaxLength(250);
                 entity.Property(e => e.FechaRegistro).IsRequired();
                 entity.Property(e => e.UsuarioRegistro).HasMaxLength(50);

@@ -7,7 +7,7 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<IEnumerable<OrdenEntradaDTO>> ObtenerOrdenesEntradaAsync();
         Task<OrdenEntradaDTO> ObtenerOrdenEntradaPorCodigoAsync(string codigo);
         Task<OrdenEntradaDTO> ObtenerUltimaOrdenEntradaAsync();
-        Task CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada, string usuarioRegistro);
+        Task CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada);
         Task<bool> ActualizarOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada);
         Task<bool> EliminarOrdenEntradaAsync(string codigo);
         Task<DetalleOrdenEntradaDTO> ObtenerDetalleOrdenEntradaAsync(string codigo);

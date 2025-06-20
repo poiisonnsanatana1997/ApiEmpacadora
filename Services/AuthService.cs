@@ -68,11 +68,12 @@ namespace AppAPIEmpacadora.Services
 
             var claims = new[]
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Username),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Role, user.Role?.Name ?? "user")
+                //new Claim(JwtRegisteredClaimNames.Sub, user.Username),
+                //new Claim(JwtRegisteredClaimNames.Email, user.Email),
+                //new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+                new Claim(ClaimTypes.NameIdentifier, user.Username),
+                new Claim(ClaimTypes.Role, user.Role?.Name ?? "user"),
+                new Claim(ClaimTypes.Name, user.Name)
             };
 
             var token = new JwtSecurityToken(

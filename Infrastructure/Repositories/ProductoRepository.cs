@@ -20,10 +20,13 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
         public async Task<IEnumerable<ProductoSimpleDTO>> ObtenerTodosAsync()
         {
             return await _context.Productos
+                .Where(x => x.Activo)
                 .Select(p => new ProductoSimpleDTO
                 {
                     Id = p.Id,
-                    Nombre = p.Nombre
+                    Codigo = p.Codigo,
+                    Nombre = p.Nombre,
+                    Variedad = p.Variedad
                 })
                 .ToListAsync();
         }
@@ -35,7 +38,9 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .Select(p => new ProductoSimpleDTO
                 {
                     Id = p.Id,
-                    Nombre = p.Nombre
+                    Codigo = p.Codigo,
+                    Nombre = p.Nombre,
+                    Variedad = p.Variedad
                 })
                 .FirstOrDefaultAsync();
 
