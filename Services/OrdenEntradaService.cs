@@ -107,7 +107,7 @@ namespace AppAPIEmpacadora.Services
             return new DetalleOrdenEntradaDTO
             {
                 OrdenEntrada = orden,
-                Tarimas = tarimas.Select(t => new TarimaDTO
+                Tarimas = tarimas.Select(t => new TarimaDetalleDTO
                 {
                     Numero = t.Numero,
                     PesoBruto = t.PesoBruto,
@@ -160,7 +160,7 @@ namespace AppAPIEmpacadora.Services
             return await _ordenEntradaRepository.ObtenerCantidadPendientesHoyAsync();
         }
 
-        public async Task<TarimaDTO> CrearTarimaAsync(string codigoOrden, TarimaDTO tarima)
+        public async Task<TarimaDetalleDTO> CrearTarimaAsync(string codigoOrden, TarimaDetalleDTO tarima)
         {
             // Validaciones adicionales si es necesario
             return await _ordenEntradaRepository.CrearTarimaAsync(codigoOrden, tarima);

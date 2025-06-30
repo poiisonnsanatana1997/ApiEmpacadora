@@ -21,6 +21,7 @@ CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+builder.Services.AddHttpContextAccessor();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
@@ -66,6 +67,14 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IOrdenEntradaRepository, OrdenEntradaRepository>();
 builder.Services.AddScoped<IProveedorRepository, ProveedorRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
+builder.Services.AddScoped<ISucursalRepository, SucursalRepository>();
+builder.Services.AddScoped<ITarimaRepository, TarimaRepository>();
+builder.Services.AddScoped<IClasificacionRepository, ClasificacionRepository>();
+builder.Services.AddScoped<ICajaClienteRepository, CajaClienteRepository>();
+builder.Services.AddScoped<IPedidoClienteRepository, PedidoClienteRepository>();
+builder.Services.AddScoped<IMermaRepository, MermaRepository>();
+builder.Services.AddScoped<IRetornoRepository, RetornoRepository>();
 
 // Registro de servicios
 builder.Services.AddScoped<IUserService, UserService>();
@@ -75,6 +84,14 @@ builder.Services.AddScoped<IOrdenEntradaService, OrdenEntradaService>();
 builder.Services.AddScoped<IProveedorService, ProveedorService>();
 builder.Services.AddScoped<IProductoService, ProductoService>();
 builder.Services.AddScoped<IProductoRepository, ProductoRepository>();
+builder.Services.AddScoped<IClienteService, ClienteService>();
+builder.Services.AddScoped<ISucursalService, SucursalService>();
+builder.Services.AddScoped<ITarimaService, TarimaService>();
+builder.Services.AddScoped<IClasificacionService, ClasificacionService>();
+builder.Services.AddScoped<ICajaClienteService, CajaClienteService>();
+builder.Services.AddScoped<IPedidoClienteService, PedidoClienteService>();
+builder.Services.AddScoped<IMermaService, MermaService>();
+builder.Services.AddScoped<IRetornoService, RetornoService>();
 
 // Configuración de JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -125,6 +142,8 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+app.UseStaticFiles();
 
 // Mover el middleware de CORS antes de cualquier otro middleware
 app.UseCors("PermitirTodo");

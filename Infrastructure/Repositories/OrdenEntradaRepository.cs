@@ -246,7 +246,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 Observaciones = pedido.Observaciones
             }).FirstOrDefault();
 
-            var tarimas = pedido.CantidadesPedido.Select(t => new TarimaDTO
+            var tarimas = pedido.CantidadesPedido.Select(t => new TarimaDetalleDTO
             {
                 Numero = t.Codigo,
                 PesoBruto = t.PesoBruto,
@@ -266,11 +266,11 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             };
         }
 
-        public async Task<IEnumerable<TarimaDTO>> ObtenerTarimasPorOrdenAsync(string codigo)
+        public async Task<IEnumerable<TarimaDetalleDTO>> ObtenerTarimasPorOrdenAsync(string codigo)
         {
             return await _context.CantidadesPedido
                 .Where(t => t.PedidoProveedor.Codigo == codigo)
-                .Select(t => new TarimaDTO
+                .Select(t => new TarimaDetalleDTO
                 {
                     Numero = t.Codigo,
                     PesoBruto = t.PesoBruto,
@@ -285,11 +285,11 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .ToListAsync();
         }
 
-        public async Task<TarimaDTO> ObtenerTarimaPorNumeroAsync(string codigo, string numeroTarima)
+        public async Task<TarimaDetalleDTO> ObtenerTarimaPorNumeroAsync(string codigo, string numeroTarima)
         {
             return await _context.CantidadesPedido
                 .Where(t => t.PedidoProveedor.Codigo == codigo && t.Codigo == numeroTarima)
-                .Select(t => new TarimaDTO
+                .Select(t => new TarimaDetalleDTO
                 {
                     Numero = t.Codigo,
                     CodigoOrden = t.PedidoProveedor.Codigo,
@@ -305,7 +305,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<bool> ActualizarTarimaAsync(TarimaDTO tarima)
+        public async Task<bool> ActualizarTarimaAsync(TarimaDetalleDTO tarima)
         {
             var tarimaEntity = await _context.CantidadesPedido
                 .Include(t => t.PedidoProveedor)
@@ -327,7 +327,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<bool> EliminarTarimaAsync(TarimaDTO tarima)
+        public async Task<bool> EliminarTarimaAsync(TarimaDetalleDTO tarima)
         {
             var tarimaEntity = await _context.CantidadesPedido
                 .FirstOrDefaultAsync(t => t.Codigo == tarima.Numero);
@@ -358,7 +358,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .CountAsync();
         }
 
-        public async Task<TarimaDTO> CrearTarimaAsync(string codigoOrden, TarimaDTO tarima)
+        public async Task<TarimaDetalleDTO> CrearTarimaAsync(string codigoOrden, TarimaDetalleDTO tarima)
         {
             var pedido = await _context.PedidosProveedor
                 .FirstOrDefaultAsync(p => p.Codigo == codigoOrden);
@@ -381,7 +381,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             _context.CantidadesPedido.Add(nuevaTarima);
             await _context.SaveChangesAsync();
 
-            return new TarimaDTO
+            return new TarimaDetalleDTO
             {
                 Numero = nuevaTarima.Codigo,
                 CodigoOrden = codigoOrden,
@@ -394,6 +394,22 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 PesoPorCaja = nuevaTarima.PesoPorCaja,
                 Observaciones = nuevaTarima.Observaciones
             };
+        }
+
+        public async Task<PedidoProveedor> GetByIdAsync(int id)
+        {
+            return await _context.PedidosProveedor
+                .Include(p => p.CantidadesPedido)
+                .Include(p => p.Proveedor)
+                .Include(p => p.ProductosPedido)
+                    .ThenInclude(pp => pp.Producto)
+                .FirstOrDefaultAsync(p => p.Id == id);
+        }
+
+        public async Task UpdatePedidoAsync(PedidoProveedor pedido)
+        {
+            _context.Entry(pedido).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
         }
     }
 }

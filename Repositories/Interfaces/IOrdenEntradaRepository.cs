@@ -1,4 +1,6 @@
 using AppAPIEmpacadora.Models.DTOs;
+using AppAPIEmpacadora.Models.Entities;
+using System.Threading.Tasks;
 
 namespace AppAPIEmpacadora.Repositories.Interfaces
 {
@@ -11,12 +13,14 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<bool> ActualizarOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada);
         Task<bool> EliminarOrdenEntradaAsync(string codigo);
         Task<DetalleOrdenEntradaDTO> ObtenerDetalleOrdenEntradaAsync(string codigo);
-        Task<IEnumerable<TarimaDTO>> ObtenerTarimasPorOrdenAsync(string codigo);
-        Task<TarimaDTO> ObtenerTarimaPorNumeroAsync(string codigo, string numeroTarima);
-        Task<bool> ActualizarTarimaAsync(TarimaDTO tarima);
-        Task<bool> EliminarTarimaAsync(TarimaDTO tarima);
+        Task<IEnumerable<TarimaDetalleDTO>> ObtenerTarimasPorOrdenAsync(string codigo);
+        Task<TarimaDetalleDTO> ObtenerTarimaPorNumeroAsync(string codigo, string numeroTarima);
+        Task<bool> ActualizarTarimaAsync(TarimaDetalleDTO tarima);
+        Task<bool> EliminarTarimaAsync(TarimaDetalleDTO tarima);
         Task<decimal> ObtenerPesoTotalRecibidoHoyAsync();
         Task<int> ObtenerCantidadPendientesHoyAsync();
-        Task<TarimaDTO> CrearTarimaAsync(string codigoOrden, TarimaDTO tarima);
+        Task<TarimaDetalleDTO> CrearTarimaAsync(string codigoOrden, TarimaDetalleDTO tarima);
+        Task<PedidoProveedor> GetByIdAsync(int id);
+        Task UpdatePedidoAsync(PedidoProveedor pedido);
     }
 } 

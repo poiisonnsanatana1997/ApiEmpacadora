@@ -5,10 +5,10 @@ namespace AppAPIEmpacadora.Models.DTOs
     public class DetalleOrdenEntradaDTO
     {
         public OrdenEntradaDTO OrdenEntrada { get; set; }
-        public List<TarimaDTO> Tarimas { get; set; }
+        public List<TarimaDetalleDTO> Tarimas { get; set; }
     }
 
-    public class TarimaDTO
+    public class TarimaDetalleDTO
     {
         public string Numero { get; set; }
         public string? CodigoOrden { get; set; }

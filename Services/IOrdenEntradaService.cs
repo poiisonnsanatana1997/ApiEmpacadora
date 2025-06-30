@@ -16,6 +16,6 @@ namespace AppAPIEmpacadora.Services
         Task<bool> EliminarTarimaAsync(string codigo, string numeroTarima);
         Task<decimal> ObtenerPesoTotalRecibidoHoyAsync();
         Task<int> ObtenerCantidadPendientesHoyAsync();
-        Task<TarimaDTO> CrearTarimaAsync(string codigoOrden, TarimaDTO tarima);
+        Task<TarimaDetalleDTO> CrearTarimaAsync(string codigoOrden, TarimaDetalleDTO tarima);
     }
 } 

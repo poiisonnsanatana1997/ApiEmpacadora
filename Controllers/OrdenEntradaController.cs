@@ -101,7 +101,7 @@ namespace AppAPIEmpacadora.Controllers
         }
 
         [HttpPost("{codigo}/tarimas")]
-        public async Task<ActionResult<TarimaDTO>> CrearTarima(string codigo, [FromBody] TarimaDTO tarima)
+        public async Task<ActionResult<TarimaDetalleDTO>> CrearTarima(string codigo, [FromBody] TarimaDetalleDTO tarima)
         {
             if (string.IsNullOrEmpty(codigo))
                 return BadRequest("El código de la orden es requerido");

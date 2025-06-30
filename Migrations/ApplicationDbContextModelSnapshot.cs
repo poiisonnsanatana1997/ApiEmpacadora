@@ -22,6 +22,35 @@ namespace AppAPIEmpacadora.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.CajaCliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("IdCliente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("Peso")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.Property<decimal>("Precio")
+                        .HasColumnType("decimal(18, 2)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdCliente");
+
+                    b.ToTable("CajaClientes");
+                });
+
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.CantidadPedido", b =>
                 {
                     b.Property<int>("Id")
@@ -68,6 +97,193 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("IdPedidoProveedor");
 
                     b.ToTable("CantidadesPedido");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Clasificacion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdPedidoProveedor")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Lote")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<decimal>("PesoTotal")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UsuarioRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdPedidoProveedor");
+
+                    b.HasIndex("Lote")
+                        .IsUnique();
+
+                    b.ToTable("Clasificaciones");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Cliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ConstanciaFiscal")
+                        .IsRequired()
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("RazonSocial")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("RepresentanteComercial")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Rfc")
+                        .IsRequired()
+                        .HasMaxLength(13)
+                        .HasColumnType("nvarchar(13)");
+
+                    b.Property<string>("TipoCliente")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UsuarioRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Clientes");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Merma", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdClasificacion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("Peso")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UsuarioRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdClasificacion");
+
+                    b.ToTable("Mermas");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoCliente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Estatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("FechaEmbarque")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("FechaModificacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdCliente")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdSucursal")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<string>("UsuarioModificacion")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UsuarioRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdCliente");
+
+                    b.HasIndex("IdSucursal");
+
+                    b.ToTable("PedidosCliente");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoProveedor", b =>
@@ -119,6 +335,21 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("IdProveedor");
 
                     b.ToTable("PedidosProveedor");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoTarima", b =>
+                {
+                    b.Property<int>("IdPedidoCliente")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdTarima")
+                        .HasColumnType("int");
+
+                    b.HasKey("IdPedidoCliente", "IdTarima");
+
+                    b.HasIndex("IdTarima");
+
+                    b.ToTable("PedidoTarimas");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Permission", b =>
@@ -237,20 +468,16 @@ namespace AppAPIEmpacadora.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Correo")
-                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("DireccionFiscal")
-                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
-
-                    b.Property<string>("Estatus")
-                        .IsRequired()
-                        .HasMaxLength(25)
-                        .HasColumnType("nvarchar(25)");
 
                     b.Property<DateTime>("FechaRegistro")
                         .HasColumnType("datetime2");
@@ -261,17 +488,14 @@ namespace AppAPIEmpacadora.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("RFC")
-                        .IsRequired()
                         .HasMaxLength(13)
                         .HasColumnType("nvarchar(13)");
 
                     b.Property<string>("SituacionFiscal")
-                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Telefono")
-                        .IsRequired()
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
@@ -283,6 +507,45 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Proveedores");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Retorno", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdClasificacion")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Numero")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Observaciones")
+                        .IsRequired()
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<decimal>("Peso")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("UsuarioRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdClasificacion");
+
+                    b.ToTable("Retornos");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Role", b =>
@@ -336,6 +599,134 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("PermissionId");
 
                     b.ToTable("RolePermissions");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Sucursal", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Correo")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("Direccion")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("EncargadoAlmacen")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("IdCliente")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Nombre")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("UsuarioRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IdCliente");
+
+                    b.HasIndex("Nombre")
+                        .IsUnique();
+
+                    b.ToTable("Sucursales");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Tarima", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("Cantidad")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Codigo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("Estatus")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime?>("FechaActualizacion")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("FechaRegistro")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("UsuarioModificacion")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("UsuarioRegistro")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Codigo")
+                        .IsUnique();
+
+                    b.ToTable("Tarimas");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.TarimaClasificacion", b =>
+                {
+                    b.Property<int>("IdTarima")
+                        .HasColumnType("int");
+
+                    b.Property<int>("IdClasificacion")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Peso")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("IdTarima", "IdClasificacion");
+
+                    b.HasIndex("IdClasificacion");
+
+                    b.ToTable("TarimaClasificaciones");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.User", b =>
@@ -450,6 +841,17 @@ namespace AppAPIEmpacadora.Migrations
                     b.ToTable("UserProfiles");
                 });
 
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.CajaCliente", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Cliente", "Cliente")
+                        .WithMany("CajasCliente")
+                        .HasForeignKey("IdCliente")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+                });
+
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.CantidadPedido", b =>
                 {
                     b.HasOne("AppAPIEmpacadora.Models.Entities.PedidoProveedor", "PedidoProveedor")
@@ -461,6 +863,47 @@ namespace AppAPIEmpacadora.Migrations
                     b.Navigation("PedidoProveedor");
                 });
 
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Clasificacion", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.PedidoProveedor", "PedidoProveedor")
+                        .WithMany()
+                        .HasForeignKey("IdPedidoProveedor")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PedidoProveedor");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Merma", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Clasificacion", "Clasificacion")
+                        .WithMany()
+                        .HasForeignKey("IdClasificacion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Clasificacion");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoCliente", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Cliente", "Cliente")
+                        .WithMany()
+                        .HasForeignKey("IdCliente")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Sucursal", "Sucursal")
+                        .WithMany()
+                        .HasForeignKey("IdSucursal")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+
+                    b.Navigation("Sucursal");
+                });
+
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoProveedor", b =>
                 {
                     b.HasOne("AppAPIEmpacadora.Models.Entities.Proveedor", "Proveedor")
@@ -470,6 +913,25 @@ namespace AppAPIEmpacadora.Migrations
                         .IsRequired();
 
                     b.Navigation("Proveedor");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoTarima", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.PedidoCliente", "PedidoCliente")
+                        .WithMany("PedidoTarimas")
+                        .HasForeignKey("IdPedidoCliente")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Tarima", "Tarima")
+                        .WithMany("PedidoTarimas")
+                        .HasForeignKey("IdTarima")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("PedidoCliente");
+
+                    b.Navigation("Tarima");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.ProductoPedido", b =>
@@ -491,6 +953,17 @@ namespace AppAPIEmpacadora.Migrations
                     b.Navigation("Producto");
                 });
 
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Retorno", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Clasificacion", "Clasificacion")
+                        .WithMany()
+                        .HasForeignKey("IdClasificacion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Clasificacion");
+                });
+
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.RolePermission", b =>
                 {
                     b.HasOne("AppAPIEmpacadora.Models.Entities.Permission", "Permission")
@@ -508,6 +981,36 @@ namespace AppAPIEmpacadora.Migrations
                     b.Navigation("Permission");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Sucursal", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Cliente", "Cliente")
+                        .WithMany("Sucursales")
+                        .HasForeignKey("IdCliente")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.TarimaClasificacion", b =>
+                {
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Clasificacion", "Clasificacion")
+                        .WithMany("TarimasClasificaciones")
+                        .HasForeignKey("IdClasificacion")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AppAPIEmpacadora.Models.Entities.Tarima", "Tarima")
+                        .WithMany("TarimasClasificaciones")
+                        .HasForeignKey("IdTarima")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Clasificacion");
+
+                    b.Navigation("Tarima");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.User", b =>
@@ -530,6 +1033,23 @@ namespace AppAPIEmpacadora.Migrations
                         .IsRequired();
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Clasificacion", b =>
+                {
+                    b.Navigation("TarimasClasificaciones");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Cliente", b =>
+                {
+                    b.Navigation("CajasCliente");
+
+                    b.Navigation("Sucursales");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoCliente", b =>
+                {
+                    b.Navigation("PedidoTarimas");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoProveedor", b =>
@@ -559,6 +1079,13 @@ namespace AppAPIEmpacadora.Migrations
                     b.Navigation("RolePermissions");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Tarima", b =>
+                {
+                    b.Navigation("PedidoTarimas");
+
+                    b.Navigation("TarimasClasificaciones");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.User", b =>

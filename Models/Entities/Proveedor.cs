@@ -13,27 +13,28 @@ namespace AppAPIEmpacadora.Models.Entities
         [StringLength(100)]
         public string Nombre { get; set; }
 
-        [Required]
         [StringLength(13)]
-        public string RFC { get; set; }
+        public string? RFC { get; set; }
 
-        [StringLength(25)]
-        public string Estatus { get; set; }
+        [Required]
+        public bool Activo { get; set; } = true;
 
         [StringLength(20)]
-        public string Telefono { get; set; }
+        public string? Telefono { get; set; }
 
         [StringLength(100)]
-        public string Correo { get; set; }
+        public string? Correo { get; set; }
 
         [StringLength(200)]
-        public string DireccionFiscal { get; set; }
+        public string? DireccionFiscal { get; set; }
 
         [StringLength(250)]
-        public string SituacionFiscal { get; set; }
+        public string? SituacionFiscal { get; set; }
 
+        [Required]
         public DateTime FechaRegistro { get; set; }
 
+        [Required]
         [StringLength(50)]
         public string UsuarioRegistro { get; set; }
 
