@@ -34,5 +34,12 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             _context.PedidosCliente.Remove(entity);
             return await _context.SaveChangesAsync() > 0;
         }
+        public async Task<IEnumerable<PedidoCliente>> ObtenerTodosConDetallesAsync()
+        {
+            return await _context.PedidosCliente
+                .Include(p => p.Cliente)
+                    .ThenInclude(c => c.CajasCliente)
+                .ToListAsync();
+        }
     }
 } 

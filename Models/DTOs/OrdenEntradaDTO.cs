@@ -2,6 +2,7 @@ namespace AppAPIEmpacadora.Models.DTOs
 {
     public class OrdenEntradaDTO
     {
+        public int Id { get; set; }
         public string Codigo { get; set; }
         public ProveedorSimpleDTO Proveedor { get; set; }
         public ProductoSimpleDTO Producto { get; set; }

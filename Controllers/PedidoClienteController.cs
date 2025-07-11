@@ -19,6 +19,10 @@ namespace AppAPIEmpacadora.Controllers
         public async Task<ActionResult<IEnumerable<PedidoClienteResponseDTO>>> GetAll()
             => Ok(await _service.ObtenerTodosAsync());
 
+        [HttpGet("con-detalles")]
+        public async Task<ActionResult<IEnumerable<PedidoClienteConDetallesDTO>>> GetAllWithDetails()
+            => Ok(await _service.ObtenerTodosConDetallesAsync());
+
         [HttpGet("{id}")]
         public async Task<ActionResult<PedidoClienteResponseDTO>> GetById(int id)
         {

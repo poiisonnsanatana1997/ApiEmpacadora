@@ -1,12 +1,7 @@
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using AppAPIEmpacadora.Models.DTOs;
 using AppAPIEmpacadora.Models.Entities;
 using AppAPIEmpacadora.Repositories.Interfaces;
 using AppAPIEmpacadora.Services.Interfaces;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
-using System.IO;
 
 namespace AppAPIEmpacadora.Services
 {

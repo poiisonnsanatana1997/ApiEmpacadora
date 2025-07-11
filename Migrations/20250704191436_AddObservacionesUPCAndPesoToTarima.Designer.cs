@@ -4,6 +4,7 @@ using AppAPIEmpacadora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppAPIEmpacadora.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250704191436_AddObservacionesUPCAndPesoToTarima")]
+    partial class AddObservacionesUPCAndPesoToTarima
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -705,11 +708,17 @@ namespace AppAPIEmpacadora.Migrations
                     b.Property<decimal?>("Peso")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<string>("Tipo")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
                     b.Property<string>("UPC")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("UsuarioModificacion")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -886,7 +895,7 @@ namespace AppAPIEmpacadora.Migrations
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Clasificacion", b =>
                 {
                     b.HasOne("AppAPIEmpacadora.Models.Entities.PedidoProveedor", "PedidoProveedor")
-                        .WithMany("Clasificaciones")
+                        .WithMany()
                         .HasForeignKey("IdPedidoProveedor")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -897,7 +906,7 @@ namespace AppAPIEmpacadora.Migrations
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Merma", b =>
                 {
                     b.HasOne("AppAPIEmpacadora.Models.Entities.Clasificacion", "Clasificacion")
-                        .WithMany("Mermas")
+                        .WithMany()
                         .HasForeignKey("IdClasificacion")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -976,7 +985,7 @@ namespace AppAPIEmpacadora.Migrations
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Retorno", b =>
                 {
                     b.HasOne("AppAPIEmpacadora.Models.Entities.Clasificacion", "Clasificacion")
-                        .WithMany("RetornosDetalle")
+                        .WithMany()
                         .HasForeignKey("IdClasificacion")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -1057,10 +1066,6 @@ namespace AppAPIEmpacadora.Migrations
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Clasificacion", b =>
                 {
-                    b.Navigation("Mermas");
-
-                    b.Navigation("RetornosDetalle");
-
                     b.Navigation("TarimasClasificaciones");
                 });
 
@@ -1079,8 +1084,6 @@ namespace AppAPIEmpacadora.Migrations
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoProveedor", b =>
                 {
                     b.Navigation("CantidadesPedido");
-
-                    b.Navigation("Clasificaciones");
 
                     b.Navigation("ProductosPedido");
                 });

@@ -4,6 +4,7 @@ using AppAPIEmpacadora.Models.DTOs;
 using AppAPIEmpacadora.Models.Entities;
 using AppAPIEmpacadora.Repositories.Interfaces;
 using AppAPIEmpacadora.Services.Interfaces;
+using System.Linq;
 
 namespace AppAPIEmpacadora.Services
 {
@@ -60,6 +61,16 @@ namespace AppAPIEmpacadora.Services
         {
             return await _repo.EliminarAsync(id);
         }
+        public async Task<IEnumerable<PedidoClienteConDetallesDTO>> ObtenerTodosConDetallesAsync()
+        {
+            var list = await _repo.ObtenerTodosConDetallesAsync();
+            var result = new List<PedidoClienteConDetallesDTO>();
+            foreach (var item in list)
+            {
+                result.Add(MapToConDetallesDTO(item));
+            }
+            return result;
+        }
         private PedidoClienteResponseDTO MapToResponseDTO(PedidoCliente entity)
         {
             return new PedidoClienteResponseDTO
@@ -74,6 +85,15 @@ namespace AppAPIEmpacadora.Services
                 Activo = entity.Activo,
                 IdSucursal = entity.IdSucursal,
                 IdCliente = entity.IdCliente
+            };
+        }
+        private PedidoClienteConDetallesDTO MapToConDetallesDTO(PedidoCliente entity)
+        {
+            return new PedidoClienteConDetallesDTO
+            {
+                Id = entity.Id,
+                RazonSocialCliente = entity.Cliente?.RazonSocial ?? string.Empty,
+                PesoCajaCliente = entity.Cliente?.CajasCliente?.FirstOrDefault()?.Peso ?? 0
             };
         }
     }

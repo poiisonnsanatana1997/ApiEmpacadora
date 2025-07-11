@@ -4,6 +4,7 @@ using AppAPIEmpacadora.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using System.Linq;
 
 namespace AppAPIEmpacadora.Infrastructure.Repositories
 {
@@ -51,6 +52,43 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             _context.Tarimas.Remove(tarima);
             await _context.SaveChangesAsync();
             return true;
+        }
+
+        public async Task<IEnumerable<Tarima>> GetTarimasParcialesAsync()
+        {
+            return await _context.Tarimas
+                .Where(t => t.Estatus.ToLower() == "parcial")
+                .Include(t => t.TarimasClasificaciones)
+                    .ThenInclude(tc => tc.Clasificacion)
+                .Include(t => t.PedidoTarimas)
+                    .ThenInclude(pt => pt.PedidoCliente)
+                        .ThenInclude(pc => pc.Cliente)
+                .Include(t => t.PedidoTarimas)
+                    .ThenInclude(pt => pt.PedidoCliente)
+                        .ThenInclude(pc => pc.Sucursal)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        // Nuevos métodos para actualización parcial
+        public async Task<TarimaClasificacion> GetTarimaClasificacionAsync(int idTarima, int idClasificacion)
+        {
+            return await _context.TarimaClasificaciones
+                .FirstOrDefaultAsync(tc => tc.IdTarima == idTarima && tc.IdClasificacion == idClasificacion);
+        }
+
+        public async Task<TarimaClasificacion> CreateTarimaClasificacionAsync(TarimaClasificacion tarimaClasificacion)
+        {
+            _context.TarimaClasificaciones.Add(tarimaClasificacion);
+            await _context.SaveChangesAsync();
+            return tarimaClasificacion;
+        }
+
+        public async Task<TarimaClasificacion> UpdateTarimaClasificacionAsync(TarimaClasificacion tarimaClasificacion)
+        {
+            _context.Entry(tarimaClasificacion).State = EntityState.Modified;
+            await _context.SaveChangesAsync();
+            return tarimaClasificacion;
         }
     }
 } 

@@ -64,5 +64,29 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                             c.PedidoProveedor.ProductosPedido.Any(pp => pp.IdProducto == idProducto))
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<TarimaClasificacion>> GetTarimasClasificacionByTipoAsync(int idClasificacion, string tipo)
+        {
+            return await _context.TarimaClasificaciones
+                .Where(tc => tc.IdClasificacion == idClasificacion && tc.Tipo == tipo)
+                .ToListAsync();
+        }
+
+        public async Task<bool> UpdateTarimasClasificacionAsync(IEnumerable<TarimaClasificacion> tarimasClasificacion)
+        {
+            try
+            {
+                foreach (var tc in tarimasClasificacion)
+                {
+                    _context.Entry(tc).State = EntityState.Modified;
+                }
+                await _context.SaveChangesAsync();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 } 

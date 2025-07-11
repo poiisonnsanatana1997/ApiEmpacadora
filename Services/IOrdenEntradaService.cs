@@ -17,5 +17,6 @@ namespace AppAPIEmpacadora.Services
         Task<decimal> ObtenerPesoTotalRecibidoHoyAsync();
         Task<int> ObtenerCantidadPendientesHoyAsync();
         Task<TarimaDetalleDTO> CrearTarimaAsync(string codigoOrden, TarimaDetalleDTO tarima);
+        Task<PedidoCompletoDTO> ObtenerPedidoCompletoPorIdAsync(int idPedidoProveedor);
     }
 } 

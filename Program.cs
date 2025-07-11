@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using AppAPIEmpacadora.Infrastructure.Data;
 using AppAPIEmpacadora.Infrastructure.Repositories;
-using AppAPIEmpacadora.Repositories;
 using AppAPIEmpacadora.Repositories.Interfaces;
 using AppAPIEmpacadora.Services;
 using AppAPIEmpacadora.Services.Interfaces;
@@ -109,15 +108,15 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Configuración de CORS para permitir cualquier origen
+// Configuración de CORS SOLO para desarrollo
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirTodo", policy =>
     {
-        policy.SetIsOriginAllowed(origin => true) // Permite cualquier origen dinámicamente
+        policy.AllowAnyOrigin()
               .AllowAnyHeader()
-              .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowAnyMethod();
+        // No usar AllowCredentials con AllowAnyOrigin
     });
 });
 
@@ -145,7 +144,22 @@ app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-// Mover el middleware de CORS antes de cualquier otro middleware
+// Middleware para manejar preflight OPTIONS (opcional)
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
+        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
+        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        context.Response.StatusCode = 200;
+        await context.Response.CompleteAsync();
+        return;
+    }
+    await next();
+});
+
+// Aplica la política de CORS para todos los orígenes
 app.UseCors("PermitirTodo");
 
 // Agregar middleware de autenticación y autorización

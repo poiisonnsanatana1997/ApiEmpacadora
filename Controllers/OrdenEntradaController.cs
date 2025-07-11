@@ -191,5 +191,29 @@ namespace AppAPIEmpacadora.Controllers
                 return StatusCode(500, "Error interno del servidor al obtener la cantidad de pendientes");
             }
         }
+
+        [HttpGet("pedido/{idPedidoProveedor}/completo")]
+        public async Task<ActionResult<PedidoCompletoDTO>> GetPedidoCompleto(int idPedidoProveedor)
+        {
+            if (idPedidoProveedor <= 0)
+                return BadRequest("El ID del pedido de proveedor debe ser mayor a 0");
+
+            try
+            {
+                var pedidoCompleto = await _ordenEntradaService.ObtenerPedidoCompletoPorIdAsync(idPedidoProveedor);
+                if (pedidoCompleto == null)
+                    return NotFound($"No se encontró el pedido con ID {idPedidoProveedor}");
+
+                return Ok(pedidoCompleto);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor al obtener el pedido completo");
+            }
+        }
     }
 } 

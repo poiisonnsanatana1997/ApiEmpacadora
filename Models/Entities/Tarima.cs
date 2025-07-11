@@ -28,15 +28,20 @@ namespace AppAPIEmpacadora.Models.Entities
         public string UsuarioRegistro { get; set; }
 
         [StringLength(50)]
-        public string UsuarioModificacion { get; set; }
-
-        [Required]
-        [StringLength(20)]
-        public string Tipo { get; set; }
+        public string? UsuarioModificacion { get; set; }
 
         [Required]
         [Column(TypeName = "decimal(18,2)")]
         public decimal Cantidad { get; set; }
+
+        [StringLength(200)]
+        public string? Observaciones { get; set; }
+
+        [StringLength(50)]
+        public string? UPC { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal? Peso { get; set; }
 
         // Navigation properties
         public ICollection<TarimaClasificacion> TarimasClasificaciones { get; set; }

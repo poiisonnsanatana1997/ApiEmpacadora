@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authorization;
 using AppAPIEmpacadora.Models.DTOs;
 using AppAPIEmpacadora.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace AppAPIEmpacadora.Controllers
 {

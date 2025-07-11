@@ -11,5 +11,6 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<PedidoCliente> CrearAsync(PedidoCliente entity);
         Task<bool> ActualizarAsync(PedidoCliente entity);
         Task<bool> EliminarAsync(int id);
+        Task<IEnumerable<PedidoCliente>> ObtenerTodosConDetallesAsync();
     }
 } 

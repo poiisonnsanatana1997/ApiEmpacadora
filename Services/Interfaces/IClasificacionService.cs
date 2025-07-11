@@ -11,5 +11,6 @@ namespace AppAPIEmpacadora.Services.Interfaces
         Task<ClasificacionDTO> CreateClasificacionAsync(CreateClasificacionDTO createClasificacionDto, string usuario);
         Task<ClasificacionDTO> UpdateClasificacionAsync(int id, UpdateClasificacionDTO updateClasificacionDto);
         Task<bool> DeleteClasificacionAsync(int id);
+        Task<AjustePesoClasificacionResponseDTO> AjustarPesoClasificacionAsync(int idClasificacion, AjustePesoClasificacionDTO ajusteDto, string usuario);
     }
 } 

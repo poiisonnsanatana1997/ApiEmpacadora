@@ -11,5 +11,6 @@ namespace AppAPIEmpacadora.Services.Interfaces
         Task<PedidoClienteResponseDTO> CrearAsync(CreatePedidoClienteDTO dto, string usuarioRegistro);
         Task<bool> ActualizarAsync(int id, UpdatePedidoClienteDTO dto);
         Task<bool> EliminarAsync(int id);
+        Task<IEnumerable<PedidoClienteConDetallesDTO>> ObtenerTodosConDetallesAsync();
     }
 } 

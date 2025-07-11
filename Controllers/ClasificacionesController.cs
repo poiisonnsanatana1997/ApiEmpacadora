@@ -75,5 +75,25 @@ namespace AppAPIEmpacadora.Controllers
             }
             return NoContent();
         }
+
+        [HttpPost("{id}/ajustar-peso")]
+        [Authorize]
+        public async Task<ActionResult<AjustePesoClasificacionResponseDTO>> AjustarPesoClasificacion(int id, AjustePesoClasificacionDTO ajusteDto)
+        {
+            var usuario = User.Identity.Name;
+            if (string.IsNullOrEmpty(usuario))
+            {
+                return Unauthorized("No se pudo obtener el nombre de usuario del token.");
+            }
+
+            var resultado = await _clasificacionService.AjustarPesoClasificacionAsync(id, ajusteDto, usuario);
+            
+            if (!resultado.AjusteRealizado)
+            {
+                return BadRequest(resultado);
+            }
+
+            return Ok(resultado);
+        }
     }
 } 

@@ -9,7 +9,6 @@
     },
     "IIS Local": {
       "commandName": "IIS",
-      "launchBrowser": true,
       "launchUrl": "http://localhost/AppAPIEmpacadora/swagger"
     }
   },

@@ -33,7 +33,12 @@ namespace AppAPIEmpacadora.Services
                     PesoTotal = clasificacion.PesoTotal,
                     FechaRegistro = clasificacion.FechaRegistro,
                     UsuarioRegistro = clasificacion.UsuarioRegistro,
-                    IdPedidoProveedor = clasificacion.IdPedidoProveedor
+                    IdPedidoProveedor = clasificacion.IdPedidoProveedor,
+                    XL = clasificacion.XL,
+                    L = clasificacion.L,
+                    M = clasificacion.M,
+                    S = clasificacion.S,
+                    Retornos = clasificacion.Retornos
                 });
             }
             return clasificacionDTOs;
@@ -51,7 +56,12 @@ namespace AppAPIEmpacadora.Services
                 PesoTotal = clasificacion.PesoTotal,
                 FechaRegistro = clasificacion.FechaRegistro,
                 UsuarioRegistro = clasificacion.UsuarioRegistro,
-                IdPedidoProveedor = clasificacion.IdPedidoProveedor
+                IdPedidoProveedor = clasificacion.IdPedidoProveedor,
+                XL = clasificacion.XL,
+                L = clasificacion.L,
+                M = clasificacion.M,
+                S = clasificacion.S,
+                Retornos = clasificacion.Retornos
             };
         }
 
@@ -76,7 +86,11 @@ namespace AppAPIEmpacadora.Services
             var clasificacionesHoy = await _clasificacionRepository.GetByDateAndProductAsync(fecha, producto.Id);
             var consecutivo = (clasificacionesHoy.Count() + 1).ToString("D3");
 
-            var lote = $"{producto.Codigo}-{proveedor.RFC.Substring(0, 3)}-{fecha:yyyyMMdd}-{consecutivo}";
+            // Generar el lote de forma segura, manejando RFCs cortos
+            var rfcPrefix = !string.IsNullOrEmpty(proveedor.RFC) && proveedor.RFC.Length >= 3 
+                ? proveedor.RFC.Substring(0, 3) 
+                : proveedor.RFC ?? "XXX";
+            var lote = $"{producto.Codigo}-{rfcPrefix}-{fecha:yyyyMMdd}-{consecutivo}";
 
             // 3. Crear la entidad
             var clasificacion = new Clasificacion
@@ -85,13 +99,18 @@ namespace AppAPIEmpacadora.Services
                 PesoTotal = pesoTotal,
                 FechaRegistro = fecha,
                 UsuarioRegistro = usuario,
-                IdPedidoProveedor = createClasificacionDto.IdPedidoProveedor
+                IdPedidoProveedor = createClasificacionDto.IdPedidoProveedor,
+                XL = 0,
+                L = 0,
+                M = 0,
+                S = 0,
+                Retornos = 0
             };
 
             var nuevaClasificacion = await _clasificacionRepository.AddAsync(clasificacion);
 
             // Actualizar el estado del pedido
-            pedido.Estado = "Clasificada";
+            pedido.Estado = "Clasificando";
             await _ordenEntradaRepository.UpdatePedidoAsync(pedido);
 
             return new ClasificacionDTO
@@ -101,7 +120,12 @@ namespace AppAPIEmpacadora.Services
                 PesoTotal = nuevaClasificacion.PesoTotal,
                 FechaRegistro = nuevaClasificacion.FechaRegistro,
                 UsuarioRegistro = nuevaClasificacion.UsuarioRegistro,
-                IdPedidoProveedor = nuevaClasificacion.IdPedidoProveedor
+                IdPedidoProveedor = nuevaClasificacion.IdPedidoProveedor,
+                XL = nuevaClasificacion.XL,
+                L = nuevaClasificacion.L,
+                M = nuevaClasificacion.M,
+                S = nuevaClasificacion.S,
+                Retornos = nuevaClasificacion.Retornos
             };
         }
 
@@ -113,6 +137,11 @@ namespace AppAPIEmpacadora.Services
             if (updateClasificacionDto.Lote != null) clasificacion.Lote = updateClasificacionDto.Lote;
             if (updateClasificacionDto.PesoTotal.HasValue) clasificacion.PesoTotal = updateClasificacionDto.PesoTotal.Value;
             if (updateClasificacionDto.IdPedidoProveedor.HasValue) clasificacion.IdPedidoProveedor = updateClasificacionDto.IdPedidoProveedor.Value;
+            if (updateClasificacionDto.XL.HasValue) clasificacion.XL = updateClasificacionDto.XL.Value;
+            if (updateClasificacionDto.L.HasValue) clasificacion.L = updateClasificacionDto.L.Value;
+            if (updateClasificacionDto.M.HasValue) clasificacion.M = updateClasificacionDto.M.Value;
+            if (updateClasificacionDto.S.HasValue) clasificacion.S = updateClasificacionDto.S.Value;
+            if (updateClasificacionDto.Retornos.HasValue) clasificacion.Retornos = updateClasificacionDto.Retornos.Value;
 
             var clasificacionActualizada = await _clasificacionRepository.UpdateAsync(clasificacion);
 
@@ -123,13 +152,97 @@ namespace AppAPIEmpacadora.Services
                 PesoTotal = clasificacionActualizada.PesoTotal,
                 FechaRegistro = clasificacionActualizada.FechaRegistro,
                 UsuarioRegistro = clasificacionActualizada.UsuarioRegistro,
-                IdPedidoProveedor = clasificacionActualizada.IdPedidoProveedor
+                IdPedidoProveedor = clasificacionActualizada.IdPedidoProveedor,
+                XL = clasificacionActualizada.XL,
+                L = clasificacionActualizada.L,
+                M = clasificacionActualizada.M,
+                S = clasificacionActualizada.S,
+                Retornos = clasificacionActualizada.Retornos
             };
         }
 
         public async Task<bool> DeleteClasificacionAsync(int id)
         {
             return await _clasificacionRepository.DeleteAsync(id);
+        }
+
+        public async Task<AjustePesoClasificacionResponseDTO> AjustarPesoClasificacionAsync(int idClasificacion, AjustePesoClasificacionDTO ajusteDto, string usuario)
+        {
+            var response = new AjustePesoClasificacionResponseDTO
+            {
+                IdClasificacion = idClasificacion,
+                AjusteRealizado = false,
+                Mensaje = "Iniciando ajuste de peso de clasificación"
+            };
+
+            // Verificar que la clasificación existe
+            var clasificacion = await _clasificacionRepository.GetByIdAsync(idClasificacion);
+            if (clasificacion == null)
+            {
+                response.Mensaje = "La clasificación especificada no existe";
+                return response;
+            }
+
+            response.Lote = clasificacion.Lote;
+            var tarimasAjustadas = new List<TarimaClasificacion>();
+            var totalTarimasAjustadas = 0;
+
+            // Procesar cada tipo de clasificación que tenga valor
+            var tiposAjuste = new Dictionary<string, decimal?>
+            {
+                { "XL", ajusteDto.XL },
+                { "L", ajusteDto.L },
+                { "M", ajusteDto.M },
+                { "S", ajusteDto.S }
+            };
+
+            foreach (var tipoAjuste in tiposAjuste)
+            {
+                if (!tipoAjuste.Value.HasValue || tipoAjuste.Value.Value <= 0)
+                {
+                    continue;
+                }
+
+                // Buscar tarimas con este tipo
+                var tarimasTipo = await _clasificacionRepository.GetTarimasClasificacionByTipoAsync(idClasificacion, tipoAjuste.Key);
+                var tarimasList = tarimasTipo.ToList();
+
+                if (tarimasList.Count > 0)
+                {
+                    // Calcular peso por tarima (distribución equitativa)
+                    var pesoPorTarima = tipoAjuste.Value.Value / tarimasList.Count;
+
+                    // Aplicar el ajuste a todas las tarimas (sumar al peso existente)
+                    foreach (var tarima in tarimasList)
+                    {
+                        tarima.Peso += pesoPorTarima;
+                        tarimasAjustadas.Add(tarima);
+                    }
+
+                    totalTarimasAjustadas += tarimasList.Count;
+                }
+            }
+
+            // Guardar los cambios si hay tarimas para ajustar
+            if (tarimasAjustadas.Count > 0)
+            {
+                var resultado = await _clasificacionRepository.UpdateTarimasClasificacionAsync(tarimasAjustadas);
+                if (resultado)
+                {
+                    response.AjusteRealizado = true;
+                    response.Mensaje = $"Ajuste completado exitosamente. Se modificaron {totalTarimasAjustadas} tarimas.";
+                }
+                else
+                {
+                    response.Mensaje = "Error al guardar los ajustes en la base de datos";
+                }
+            }
+            else
+            {
+                response.Mensaje = "No se encontraron tarimas para ajustar con los tipos especificados";
+            }
+
+            return response;
         }
     }
 } 

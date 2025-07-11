@@ -61,8 +61,8 @@ namespace AppAPIEmpacadora.Services
                 Observaciones = dto.Observaciones
             };
 
-            await _ordenEntradaRepository.CrearOrdenEntradaAsync(ordenEntrada);
-            return ordenEntrada;
+            var ordenCreada = await _ordenEntradaRepository.CrearOrdenEntradaAsync(ordenEntrada);
+            return ordenCreada;
         }
 
         public async Task<OrdenEntradaDTO> ActualizarOrdenEntradaAsync(string codigo, ActualizarOrdenEntradaDTO dto, string usuarioModificacion)
@@ -164,6 +164,18 @@ namespace AppAPIEmpacadora.Services
         {
             // Validaciones adicionales si es necesario
             return await _ordenEntradaRepository.CrearTarimaAsync(codigoOrden, tarima);
+        }
+
+        public async Task<PedidoCompletoDTO> ObtenerPedidoCompletoPorIdAsync(int idPedidoProveedor)
+        {
+            if (idPedidoProveedor <= 0)
+                throw new ArgumentException("El ID del pedido de proveedor debe ser mayor a 0");
+
+            var pedidoCompleto = await _ordenEntradaRepository.ObtenerPedidoCompletoPorIdAsync(idPedidoProveedor);
+            if (pedidoCompleto == null)
+                return null;
+
+            return pedidoCompleto;
         }
     }
 }

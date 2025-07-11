@@ -13,5 +13,7 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<Clasificacion> UpdateAsync(Clasificacion clasificacion);
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<Clasificacion>> GetByDateAndProductAsync(DateTime date, int idProducto);
+        Task<IEnumerable<TarimaClasificacion>> GetTarimasClasificacionByTipoAsync(int idClasificacion, string tipo);
+        Task<bool> UpdateTarimasClasificacionAsync(IEnumerable<TarimaClasificacion> tarimasClasificacion);
     }
 } 

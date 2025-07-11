@@ -39,4 +39,11 @@ namespace AppAPIEmpacadora.Models.DTOs
         public int IdSucursal { get; set; }
         public int IdCliente { get; set; }
     }
+
+    public class PedidoClienteConDetallesDTO
+    {
+        public int Id { get; set; }
+        public string RazonSocialCliente { get; set; }
+        public decimal PesoCajaCliente { get; set; }
+    }
 } 

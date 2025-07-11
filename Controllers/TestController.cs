@@ -2,38 +2,34 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AppAPIEmpacadora.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class TestController : ControllerBase
     {
         [HttpGet]
-        public IActionResult Get()
+        public ActionResult<string> Get()
         {
-            return Ok(new { message = "GET funciona correctamente", timestamp = DateTime.Now });
+            return Ok("API funcionando correctamente");
         }
 
-        [HttpPost]
-        public IActionResult Post([FromBody] object data)
+        [HttpGet("cors")]
+        public ActionResult<object> TestCors()
         {
-            return Ok(new { message = "POST funciona correctamente", data, timestamp = DateTime.Now });
+            return Ok(new { 
+                message = "CORS está funcionando correctamente",
+                timestamp = DateTime.Now,
+                origin = Request.Headers["Origin"].ToString()
+            });
         }
 
-        [HttpPut("{id}")]
-        public IActionResult Put(int id, [FromBody] object data)
+        [HttpPost("test")]
+        public ActionResult<object> TestPost([FromBody] object data)
         {
-            return Ok(new { message = "PUT funciona correctamente", id, data, timestamp = DateTime.Now });
-        }
-
-        [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
-        {
-            return Ok(new { message = "DELETE funciona correctamente", id, timestamp = DateTime.Now });
-        }
-
-        [HttpOptions]
-        public IActionResult Options()
-        {
-            return Ok(new { message = "OPTIONS funciona correctamente", timestamp = DateTime.Now });
+            return Ok(new { 
+                message = "POST funcionando correctamente",
+                receivedData = data,
+                timestamp = DateTime.Now
+            });
         }
     }
 } 

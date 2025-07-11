@@ -9,7 +9,7 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<IEnumerable<OrdenEntradaDTO>> ObtenerOrdenesEntradaAsync();
         Task<OrdenEntradaDTO> ObtenerOrdenEntradaPorCodigoAsync(string codigo);
         Task<OrdenEntradaDTO> ObtenerUltimaOrdenEntradaAsync();
-        Task CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada);
+        Task<OrdenEntradaDTO> CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada);
         Task<bool> ActualizarOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada);
         Task<bool> EliminarOrdenEntradaAsync(string codigo);
         Task<DetalleOrdenEntradaDTO> ObtenerDetalleOrdenEntradaAsync(string codigo);
@@ -22,5 +22,6 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<TarimaDetalleDTO> CrearTarimaAsync(string codigoOrden, TarimaDetalleDTO tarima);
         Task<PedidoProveedor> GetByIdAsync(int id);
         Task UpdatePedidoAsync(PedidoProveedor pedido);
+        Task<PedidoCompletoDTO> ObtenerPedidoCompletoPorIdAsync(int id);
     }
 } 

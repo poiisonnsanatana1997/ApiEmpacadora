@@ -23,6 +23,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                     .ThenInclude(pp => pp.Producto)
                 .SelectMany(p => p.ProductosPedido.Select(pp => new OrdenEntradaDTO
                 {
+                    Id = p.Id,
                     Codigo = p.Codigo,
                     Proveedor = new ProveedorSimpleDTO
                     {
@@ -57,6 +58,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .Where(p => p.Codigo == codigo)
                 .SelectMany(p => p.ProductosPedido.Select(pp => new OrdenEntradaDTO
                 {
+                    Id = p.Id,
                     Codigo = p.Codigo,
                     Proveedor = new ProveedorSimpleDTO
                     {
@@ -90,6 +92,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .OrderByDescending(p => p.Id)
                 .SelectMany(p => p.ProductosPedido.Select(pp => new OrdenEntradaDTO
                 {
+                    Id = p.Id,
                     Codigo = p.Codigo,
                     Proveedor = new ProveedorSimpleDTO
                     {
@@ -114,7 +117,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada)
+        public async Task<OrdenEntradaDTO> CrearOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada)
         {
             var pedido = new PedidoProveedor
             {
@@ -136,6 +139,10 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             };
             _context.PedidosProveedor.Add(pedido);
             await _context.SaveChangesAsync();
+            
+            // Devolver la orden creada con el ID asignado
+            ordenEntrada.Id = pedido.Id;
+            return ordenEntrada;
         }
 
         public async Task<bool> ActualizarOrdenEntradaAsync(OrdenEntradaDTO ordenEntrada)
@@ -224,6 +231,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
 
             var ordenEntrada = pedido.ProductosPedido.Select(pp => new OrdenEntradaDTO
             {
+                Id = pedido.Id,
                 Codigo = pedido.Codigo,
                 Proveedor = new ProveedorSimpleDTO
                 {
@@ -410,6 +418,102 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
         {
             _context.Entry(pedido).State = EntityState.Modified;
             await _context.SaveChangesAsync();
+        }
+
+        public async Task<PedidoCompletoDTO> ObtenerPedidoCompletoPorIdAsync(int id)
+        {
+            var pedido = await _context.PedidosProveedor
+                .Include(p => p.Proveedor)
+                .Include(p => p.ProductosPedido)
+                    .ThenInclude(pp => pp.Producto)
+                .Include(p => p.Clasificaciones)
+                    .ThenInclude(c => c.Mermas)
+                .Include(p => p.Clasificaciones)
+                    .ThenInclude(c => c.RetornosDetalle)
+                .Include(p => p.Clasificaciones)
+                    .ThenInclude(c => c.TarimasClasificaciones)
+                        .ThenInclude(tc => tc.Tarima)
+                .FirstOrDefaultAsync(p => p.Id == id);
+
+            if (pedido == null)
+                return null;
+
+            return new PedidoCompletoDTO
+            {
+                Id = pedido.Id,
+                Codigo = pedido.Codigo,
+                Estado = pedido.Estado,
+                FechaRegistro = pedido.FechaRegistro,
+                FechaEstimada = pedido.FechaEstimada,
+                FechaRecepcion = pedido.FechaRecepcion,
+                UsuarioRegistro = pedido.UsuarioRegistro,
+                UsuarioRecepcion = pedido.UsuarioRecepcion,
+                Observaciones = pedido.Observaciones,
+                Proveedor = new ProveedorSimpleDTO
+                {
+                    Id = pedido.Proveedor.Id,
+                    Nombre = pedido.Proveedor.Nombre
+                },
+                Producto = pedido.ProductosPedido?.FirstOrDefault()?.Producto != null ? new ProductoSimpleDTO
+                {
+                    Id = pedido.ProductosPedido.First().Producto.Id,
+                    Codigo = pedido.ProductosPedido.First().Producto.Codigo,
+                    Nombre = pedido.ProductosPedido.First().Producto.Nombre,
+                    Variedad = pedido.ProductosPedido.First().Producto.Variedad
+                } : null,
+                Clasificaciones = pedido.Clasificaciones?.Select(c => new ClasificacionCompletaDTO
+                {
+                    Id = c.Id,
+                    Lote = c.Lote,
+                    PesoTotal = c.PesoTotal,
+                    FechaRegistro = c.FechaRegistro,
+                    UsuarioRegistro = c.UsuarioRegistro,
+                    XL = c.XL,
+                    L = c.L,
+                    M = c.M,
+                    S = c.S,
+                    Retornos = c.Retornos,
+                    Mermas = c.Mermas?.Select(m => new MermaDetalleDTO
+                    {
+                        Id = m.Id,
+                        Tipo = m.Tipo,
+                        Peso = m.Peso,
+                        Observaciones = m.Observaciones,
+                        FechaRegistro = m.FechaRegistro,
+                        UsuarioRegistro = m.UsuarioRegistro
+                    }).ToList(),
+                    RetornosDetalle = c.RetornosDetalle?.Select(r => new RetornoDetalleDTO
+                    {
+                        Id = r.Id,
+                        Numero = r.Numero,
+                        Peso = r.Peso,
+                        Observaciones = r.Observaciones,
+                        FechaRegistro = r.FechaRegistro,
+                        UsuarioRegistro = r.UsuarioRegistro
+                    }).ToList(),
+                    TarimasClasificaciones = c.TarimasClasificaciones?.Select(tc => new TarimaClasificacionDTO
+                    {
+                        IdTarima = tc.IdTarima,
+                        IdClasificacion = tc.IdClasificacion,
+                        Peso = tc.Peso,
+                        Tipo = tc.Tipo,
+                        Tarima = new TarimaDTO
+                        {
+                            Id = tc.Tarima.Id,
+                            Codigo = tc.Tarima.Codigo,
+                            Estatus = tc.Tarima.Estatus,
+                            FechaRegistro = tc.Tarima.FechaRegistro,
+                            FechaActualizacion = tc.Tarima.FechaActualizacion,
+                            UsuarioRegistro = tc.Tarima.UsuarioRegistro,
+                            UsuarioModificacion = tc.Tarima.UsuarioModificacion,
+                            Cantidad = tc.Tarima.Cantidad,
+                            Observaciones = tc.Tarima.Observaciones,
+                            UPC = tc.Tarima.UPC,
+                            Peso = tc.Tarima.Peso
+                        }
+                    }).ToList()
+                }).ToList()
+            };
         }
     }
 }

@@ -25,11 +25,28 @@ namespace AppAPIEmpacadora.Models.Entities
         [StringLength(50)]
         public string UsuarioRegistro { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal XL { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal L { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal M { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal S { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal Retornos { get; set; }
+
         [ForeignKey("PedidoProveedor")]
         public int IdPedidoProveedor { get; set; }
 
         // Navigation properties
         public virtual PedidoProveedor PedidoProveedor { get; set; }
         public ICollection<TarimaClasificacion> TarimasClasificaciones { get; set; }
+        public ICollection<Merma> Mermas { get; set; }
+        public ICollection<Retorno> RetornosDetalle { get; set; }
     }
 }

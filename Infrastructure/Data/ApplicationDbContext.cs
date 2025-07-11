@@ -247,7 +247,6 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.Property(e => e.FechaActualizacion);
                 entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.UsuarioModificacion).HasMaxLength(50);
-                entity.Property(e => e.Tipo).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Cantidad).HasColumnType("decimal(18,2)").IsRequired();
             });
 
@@ -262,7 +261,7 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
 
                 entity.HasOne(c => c.PedidoProveedor)
-                    .WithMany() // No navigation property on the other side in the diagram
+                    .WithMany(p => p.Clasificaciones)
                     .HasForeignKey(c => c.IdPedidoProveedor);
             });
 
@@ -327,7 +326,7 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.Property(e => e.FechaRegistro).IsRequired();
                 entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
                 entity.HasOne(e => e.Clasificacion)
-                    .WithMany()
+                    .WithMany(c => c.Mermas)
                     .HasForeignKey(e => e.IdClasificacion);
             });
 
@@ -341,7 +340,7 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.Property(e => e.FechaRegistro).IsRequired();
                 entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
                 entity.HasOne(e => e.Clasificacion)
-                    .WithMany()
+                    .WithMany(c => c.RetornosDetalle)
                     .HasForeignKey(e => e.IdClasificacion);
             });
 
