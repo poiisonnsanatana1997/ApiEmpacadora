@@ -24,10 +24,17 @@ namespace AppAPIEmpacadora.Services
 
         public async Task<IEnumerable<TarimaDTO>> GetTarimasAsync()
         {
-            var tarimas = await _tarimaRepository.GetAllAsync();
+            var tarimas = await _tarimaRepository.GetAllWithClasificacionesAsync();
             var tarimaDTOs = new List<TarimaDTO>();
             foreach (var tarima in tarimas)
             {
+                // Calcular la cantidad total sumando todas las cantidades de las relaciones tarima-clasificación
+                decimal? cantidadTotal = null;
+                if (tarima.TarimasClasificaciones != null && tarima.TarimasClasificaciones.Any())
+                {
+                    cantidadTotal = tarima.TarimasClasificaciones.Sum(tc => tc.Cantidad ?? 0);
+                }
+
                 tarimaDTOs.Add(new TarimaDTO
                 {
                     Id = tarima.Id,
@@ -37,10 +44,10 @@ namespace AppAPIEmpacadora.Services
                     FechaActualizacion = tarima.FechaActualizacion,
                     UsuarioRegistro = tarima.UsuarioRegistro,
                     UsuarioModificacion = tarima.UsuarioModificacion,
-                    Cantidad = tarima.Cantidad,
                     Observaciones = tarima.Observaciones,
                     UPC = tarima.UPC,
-                    Peso = tarima.Peso
+                    Peso = tarima.Peso,
+                    Cantidad = cantidadTotal
                 });
             }
             return tarimaDTOs;
@@ -48,8 +55,15 @@ namespace AppAPIEmpacadora.Services
 
         public async Task<TarimaDTO> GetTarimaByIdAsync(int id)
         {
-            var tarima = await _tarimaRepository.GetByIdAsync(id);
+            var tarima = await _tarimaRepository.GetByIdWithClasificacionesAsync(id);
             if (tarima == null) return null;
+
+            // Calcular la cantidad total sumando todas las cantidades de las relaciones tarima-clasificación
+            decimal? cantidadTotal = null;
+            if (tarima.TarimasClasificaciones != null && tarima.TarimasClasificaciones.Any())
+            {
+                cantidadTotal = tarima.TarimasClasificaciones.Sum(tc => tc.Cantidad ?? 0);
+            }
 
             return new TarimaDTO
             {
@@ -60,10 +74,10 @@ namespace AppAPIEmpacadora.Services
                 FechaActualizacion = tarima.FechaActualizacion,
                 UsuarioRegistro = tarima.UsuarioRegistro,
                 UsuarioModificacion = tarima.UsuarioModificacion,
-                Cantidad = tarima.Cantidad,
                 Observaciones = tarima.Observaciones,
                 UPC = tarima.UPC,
-                Peso = tarima.Peso
+                Peso = tarima.Peso,
+                Cantidad = cantidadTotal
             };
         }
 
@@ -103,7 +117,6 @@ namespace AppAPIEmpacadora.Services
                         Estatus = createTarimaDto.Estatus,
                         FechaRegistro = createTarimaDto.FechaRegistro,
                         UsuarioRegistro = usuario,
-                        Cantidad = createTarimaDto.Cantidad,
                         Observaciones = createTarimaDto.Observaciones,
                         UPC = createTarimaDto.UPC,
                         Peso = createTarimaDto.Peso
@@ -125,15 +138,13 @@ namespace AppAPIEmpacadora.Services
                     // Crear la relación TarimaClasificacion solo si se proporciona IdClasificacion
                     if (createTarimaDto.IdClasificacion > 0)
                     {
-                        // Calcular el peso: cantidad * peso del DTO
-                        var pesoCalculado = createTarimaDto.Cantidad * (createTarimaDto.Peso ?? 0);
-                        
                         var tarimaClasificacion = new TarimaClasificacion
                         {
                             IdClasificacion = createTarimaDto.IdClasificacion.Value,
                             IdTarima = nuevaTarima.Id,
-                            Peso = pesoCalculado,
-                            Tipo = createTarimaDto.Tipo
+                            Peso = createTarimaDto.Peso ?? 0,
+                            Tipo = createTarimaDto.Tipo,
+                            Cantidad = createTarimaDto.CantidadTarimas
                         };
                         _context.TarimaClasificaciones.Add(tarimaClasificacion);
                     }
@@ -146,10 +157,10 @@ namespace AppAPIEmpacadora.Services
                         Estatus = nuevaTarima.Estatus,
                         FechaRegistro = nuevaTarima.FechaRegistro,
                         UsuarioRegistro = nuevaTarima.UsuarioRegistro,
-                        Cantidad = nuevaTarima.Cantidad,
                         Observaciones = nuevaTarima.Observaciones,
                         UPC = nuevaTarima.UPC,
-                        Peso = nuevaTarima.Peso
+                        Peso = nuevaTarima.Peso,
+                        Cantidad = createTarimaDto.IdClasificacion > 0 ? createTarimaDto.CantidadTarimas : null
                     });
 
                     siguienteNumero++;
@@ -174,12 +185,11 @@ namespace AppAPIEmpacadora.Services
 
         public async Task<TarimaDTO> UpdateTarimaAsync(int id, UpdateTarimaDTO updateTarimaDto, string usuario)
         {
-            var tarima = await _tarimaRepository.GetByIdAsync(id);
+            var tarima = await _tarimaRepository.GetByIdWithClasificacionesAsync(id);
             if (tarima == null) return null;
 
             if (updateTarimaDto.Codigo != null) tarima.Codigo = updateTarimaDto.Codigo;
             if (updateTarimaDto.Estatus != null) tarima.Estatus = updateTarimaDto.Estatus;
-            if (updateTarimaDto.Cantidad.HasValue) tarima.Cantidad = updateTarimaDto.Cantidad.Value;
             if (updateTarimaDto.Observaciones != null) tarima.Observaciones = updateTarimaDto.Observaciones;
             if (updateTarimaDto.UPC != null) tarima.UPC = updateTarimaDto.UPC;
             if (updateTarimaDto.Peso.HasValue) tarima.Peso = updateTarimaDto.Peso.Value;
@@ -188,6 +198,13 @@ namespace AppAPIEmpacadora.Services
             tarima.FechaActualizacion = updateTarimaDto.FechaActualizacion;
             
             var tarimaActualizada = await _tarimaRepository.UpdateAsync(tarima);
+
+            // Calcular la cantidad total sumando todas las cantidades de las relaciones tarima-clasificación
+            decimal? cantidadTotal = null;
+            if (tarima.TarimasClasificaciones != null && tarima.TarimasClasificaciones.Any())
+            {
+                cantidadTotal = tarima.TarimasClasificaciones.Sum(tc => tc.Cantidad ?? 0);
+            }
 
             return new TarimaDTO
             {
@@ -198,10 +215,10 @@ namespace AppAPIEmpacadora.Services
                 FechaActualizacion = tarimaActualizada.FechaActualizacion,
                 UsuarioRegistro = tarimaActualizada.UsuarioRegistro,
                 UsuarioModificacion = tarimaActualizada.UsuarioModificacion,
-                Cantidad = tarimaActualizada.Cantidad,
                 Observaciones = tarimaActualizada.Observaciones,
                 UPC = tarimaActualizada.UPC,
-                Peso = tarimaActualizada.Peso
+                Peso = tarimaActualizada.Peso,
+                Cantidad = cantidadTotal
             };
         }
 
@@ -229,7 +246,6 @@ namespace AppAPIEmpacadora.Services
                     FechaActualizacion = tarima.FechaActualizacion,
                     UsuarioRegistro = tarima.UsuarioRegistro,
                     UsuarioModificacion = tarima.UsuarioModificacion,
-                    Cantidad = tarima.Cantidad,
                     Observaciones = tarima.Observaciones,
                     UPC = tarima.UPC,
                     Peso = tarima.Peso
@@ -246,6 +262,7 @@ namespace AppAPIEmpacadora.Services
                             Lote = tc.Clasificacion?.Lote ?? string.Empty,
                             Peso = tc.Peso,
                             Tipo = tc.Tipo,
+                            Cantidad = tc.Cantidad,
                             PesoTotal = tc.Clasificacion?.PesoTotal ?? 0,
                             FechaRegistro = tc.Clasificacion?.FechaRegistro ?? DateTime.MinValue,
                             UsuarioRegistro = tc.Clasificacion?.UsuarioRegistro ?? string.Empty
@@ -305,7 +322,8 @@ namespace AppAPIEmpacadora.Services
 
                 if (tarimaClasificacion != null)
                 {
-                    // Regla 1: La relación EXISTE - Sumar al peso actual
+                    // Regla 1: La relación EXISTE - Actualizar cantidad y peso
+                    tarimaClasificacion.Cantidad = (tarimaClasificacion.Cantidad ?? 0) + dto.Cantidad;
                     var pesoCalculado = dto.Cantidad * tarima.Peso.Value;
                     tarimaClasificacion.Peso += pesoCalculado;
                     
@@ -321,7 +339,8 @@ namespace AppAPIEmpacadora.Services
                         IdTarima = dto.IdTarima,
                         IdClasificacion = dto.IdClasificacion,
                         Peso = pesoCalculado,
-                        Tipo = dto.Tipo // Usar el tipo proporcionado en el DTO
+                        Tipo = dto.Tipo, // Usar el tipo proporcionado en el DTO
+                        Cantidad = dto.Cantidad
                     };
                     
                     await _tarimaRepository.CreateTarimaClasificacionAsync(nuevaTarimaClasificacion);
@@ -329,13 +348,22 @@ namespace AppAPIEmpacadora.Services
 
                 // Actualizar el estatus de la tarima
                 tarima.Estatus = dto.Estatus;
-                tarima.Cantidad += dto.Cantidad;
                 tarima.UsuarioModificacion = usuario;
                 tarima.FechaActualizacion = DateTime.Now;
 
                 var tarimaActualizada = await _tarimaRepository.UpdateAsync(tarima);
 
                 await transaction.CommitAsync();
+
+                // Obtener la tarima actualizada con clasificaciones para calcular la cantidad total
+                var tarimaConClasificaciones = await _tarimaRepository.GetByIdWithClasificacionesAsync(tarimaActualizada.Id);
+                
+                // Calcular la cantidad total sumando todas las cantidades de las relaciones tarima-clasificación
+                decimal? cantidadTotal = null;
+                if (tarimaConClasificaciones?.TarimasClasificaciones != null && tarimaConClasificaciones.TarimasClasificaciones.Any())
+                {
+                    cantidadTotal = tarimaConClasificaciones.TarimasClasificaciones.Sum(tc => tc.Cantidad ?? 0);
+                }
 
                 // Retornar la tarima actualizada
                 return new TarimaDTO
@@ -347,10 +375,10 @@ namespace AppAPIEmpacadora.Services
                     FechaActualizacion = tarimaActualizada.FechaActualizacion,
                     UsuarioRegistro = tarimaActualizada.UsuarioRegistro,
                     UsuarioModificacion = tarimaActualizada.UsuarioModificacion,
-                    Cantidad = tarimaActualizada.Cantidad,
                     Observaciones = tarimaActualizada.Observaciones,
                     UPC = tarimaActualizada.UPC,
-                    Peso = tarimaActualizada.Peso
+                    Peso = tarimaActualizada.Peso,
+                    Cantidad = cantidadTotal
                 };
             }
             catch

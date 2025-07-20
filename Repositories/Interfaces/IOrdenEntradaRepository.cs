@@ -16,7 +16,7 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<IEnumerable<TarimaDetalleDTO>> ObtenerTarimasPorOrdenAsync(string codigo);
         Task<TarimaDetalleDTO> ObtenerTarimaPorNumeroAsync(string codigo, string numeroTarima);
         Task<bool> ActualizarTarimaAsync(TarimaDetalleDTO tarima);
-        Task<bool> EliminarTarimaAsync(TarimaDetalleDTO tarima);
+        Task<bool> EliminarTarimaAsync(string codigo, string numero);
         Task<decimal> ObtenerPesoTotalRecibidoHoyAsync();
         Task<int> ObtenerCantidadPendientesHoyAsync();
         Task<TarimaDetalleDTO> CrearTarimaAsync(string codigoOrden, TarimaDetalleDTO tarima);

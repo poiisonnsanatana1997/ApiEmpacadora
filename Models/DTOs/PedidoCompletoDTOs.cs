@@ -62,6 +62,7 @@ namespace AppAPIEmpacadora.Models.DTOs
         public int IdClasificacion { get; set; }
         public decimal Peso { get; set; }
         public string Tipo { get; set; }
+        public decimal? Cantidad { get; set; }
         public TarimaDTO Tarima { get; set; }
     }
 } 

@@ -8,7 +8,7 @@ namespace AppAPIEmpacadora.Models.Entities
         public int IdClasificacion { get; set; }
         public decimal Peso { get; set; }
         public string Tipo { get; set; }
-
+        public decimal? Cantidad { get; set; }
         public Tarima Tarima { get; set; }
         public Clasificacion Clasificacion { get; set; }
     }

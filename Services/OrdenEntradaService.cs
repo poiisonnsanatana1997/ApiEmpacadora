@@ -143,11 +143,10 @@ namespace AppAPIEmpacadora.Services
 
         public async Task<bool> EliminarTarimaAsync(string codigo, string numeroTarima)
         {
-            var tarima = await _ordenEntradaRepository.ObtenerTarimaPorNumeroAsync(codigo, numeroTarima);
-            if (tarima == null)
-                return false;
-
-            return await _ordenEntradaRepository.EliminarTarimaAsync(tarima);
+            //  var tarima = await _ordenEntradaRepository.ObtenerTarimaPorNumeroAsync(codigo, numeroTarima);
+            //  if (tarima == null)
+            //  return false;
+            return await _ordenEntradaRepository.EliminarTarimaAsync(codigo, numeroTarima);
         }
 
         public async Task<decimal> ObtenerPesoTotalRecibidoHoyAsync()

@@ -13,10 +13,10 @@ namespace AppAPIEmpacadora.Models.DTOs
         public DateTime? FechaActualizacion { get; set; }
         public string UsuarioRegistro { get; set; }
         public string? UsuarioModificacion { get; set; }
-        public decimal Cantidad { get; set; }
         public string? Observaciones { get; set; }
         public string? UPC { get; set; }
         public decimal? Peso { get; set; }
+        public decimal? Cantidad { get; set; }
     }
 
     public class CreateTarimaDTO
@@ -31,9 +31,6 @@ namespace AppAPIEmpacadora.Models.DTOs
         [Required]
         [StringLength(20)]
         public string Tipo { get; set; }
-
-        [Required]
-        public decimal Cantidad { get; set; }
 
         [StringLength(200)]
         public string? Observaciones { get; set; }
@@ -64,8 +61,6 @@ namespace AppAPIEmpacadora.Models.DTOs
 
         [StringLength(20)]
         public string? Tipo { get; set; }
-
-        public decimal? Cantidad { get; set; }
 
         [StringLength(200)]
         public string? Observaciones { get; set; }
@@ -101,6 +96,7 @@ namespace AppAPIEmpacadora.Models.DTOs
         public string Lote { get; set; }
         public decimal Peso { get; set; }
         public string Tipo { get; set; }
+        public decimal? Cantidad { get; set; }
         public decimal PesoTotal { get; set; }
         public DateTime FechaRegistro { get; set; }
         public string UsuarioRegistro { get; set; }
@@ -115,7 +111,6 @@ namespace AppAPIEmpacadora.Models.DTOs
         public DateTime? FechaActualizacion { get; set; }
         public string UsuarioRegistro { get; set; }
         public string? UsuarioModificacion { get; set; }
-        public decimal Cantidad { get; set; }
         public string? Observaciones { get; set; }
         public string? UPC { get; set; }
         public decimal? Peso { get; set; }

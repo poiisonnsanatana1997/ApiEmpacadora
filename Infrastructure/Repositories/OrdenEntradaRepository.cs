@@ -335,10 +335,11 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             return true;
         }
 
-        public async Task<bool> EliminarTarimaAsync(TarimaDetalleDTO tarima)
+        public async Task<bool> EliminarTarimaAsync(string codigo, string numeroTarima)
         {
             var tarimaEntity = await _context.CantidadesPedido
-                .FirstOrDefaultAsync(t => t.Codigo == tarima.Numero);
+                .Include(t => t.PedidoProveedor)
+                .FirstOrDefaultAsync(t => t.Codigo == numeroTarima && t.PedidoProveedor.Codigo == codigo);
 
             if (tarimaEntity == null)
                 return false;
@@ -497,6 +498,7 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                         IdClasificacion = tc.IdClasificacion,
                         Peso = tc.Peso,
                         Tipo = tc.Tipo,
+                        Cantidad = tc.Cantidad,
                         Tarima = new TarimaDTO
                         {
                             Id = tc.Tarima.Id,
@@ -506,7 +508,6 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                             FechaActualizacion = tc.Tarima.FechaActualizacion,
                             UsuarioRegistro = tc.Tarima.UsuarioRegistro,
                             UsuarioModificacion = tc.Tarima.UsuarioModificacion,
-                            Cantidad = tc.Tarima.Cantidad,
                             Observaciones = tc.Tarima.Observaciones,
                             UPC = tc.Tarima.UPC,
                             Peso = tc.Tarima.Peso

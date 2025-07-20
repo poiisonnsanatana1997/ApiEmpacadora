@@ -17,5 +17,9 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<TarimaClasificacion> GetTarimaClasificacionAsync(int idTarima, int idClasificacion);
         Task<TarimaClasificacion> CreateTarimaClasificacionAsync(TarimaClasificacion tarimaClasificacion);
         Task<TarimaClasificacion> UpdateTarimaClasificacionAsync(TarimaClasificacion tarimaClasificacion);
+        
+        // Método para obtener tarimas con clasificaciones incluidas
+        Task<IEnumerable<Tarima>> GetAllWithClasificacionesAsync();
+        Task<Tarima> GetByIdWithClasificacionesAsync(int id);
     }
 } 

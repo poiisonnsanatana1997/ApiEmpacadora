@@ -90,5 +90,22 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return tarimaClasificacion;
         }
+
+        // Método para obtener tarimas con clasificaciones incluidas
+        public async Task<IEnumerable<Tarima>> GetAllWithClasificacionesAsync()
+        {
+            return await _context.Tarimas
+                .Include(t => t.TarimasClasificaciones)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<Tarima> GetByIdWithClasificacionesAsync(int id)
+        {
+            return await _context.Tarimas
+                .Include(t => t.TarimasClasificaciones)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(t => t.Id == id);
+        }
     }
 } 

@@ -247,7 +247,9 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.Property(e => e.FechaActualizacion);
                 entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
                 entity.Property(e => e.UsuarioModificacion).HasMaxLength(50);
-                entity.Property(e => e.Cantidad).HasColumnType("decimal(18,2)").IsRequired();
+                entity.Property(e => e.Observaciones).HasMaxLength(200);
+                entity.Property(e => e.UPC).HasMaxLength(50);
+                entity.Property(e => e.Peso).HasColumnType("decimal(18,2)");
             });
 
              // Configuración de la tabla Clasificacion
@@ -271,6 +273,7 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.HasKey(tc => new { tc.IdTarima, tc.IdClasificacion });
                 entity.Property(tc => tc.Peso).HasColumnType("decimal(18,2)").IsRequired();
                 entity.Property(tc => tc.Tipo).IsRequired().HasMaxLength(20);
+                entity.Property(tc => tc.Cantidad).HasColumnType("decimal(18,2)");
                 entity.HasOne(tc => tc.Tarima)
                     .WithMany(t => t.TarimasClasificaciones)
                     .HasForeignKey(tc => tc.IdTarima);

@@ -29,11 +29,7 @@ namespace AppAPIEmpacadora.Models.Entities
 
         [StringLength(50)]
         public string? UsuarioModificacion { get; set; }
-
-        [Required]
-        [Column(TypeName = "decimal(18,2)")]
-        public decimal Cantidad { get; set; }
-
+        
         [StringLength(200)]
         public string? Observaciones { get; set; }
 
