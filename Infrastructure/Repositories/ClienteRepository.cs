@@ -18,7 +18,10 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
 
         public async Task<IEnumerable<Cliente>> GetAllAsync()
         {
-            return await _context.Clientes.ToListAsync();
+            return await _context.Clientes
+                                 .Include(c => c.Sucursales)
+                                 .Include(c => c.CajasCliente)
+                                 .ToListAsync();
         }
 
         public async Task<Cliente> GetByIdAsync(int id)

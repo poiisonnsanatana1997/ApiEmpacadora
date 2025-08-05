@@ -45,6 +45,57 @@ namespace AppAPIEmpacadora.Services
             return clienteDTOs;
         }
 
+        public async Task<IEnumerable<ClienteDTO>> GetClientesDetalladosAsync()
+        {
+            var clientes = await _clienteRepository.GetAllAsync();
+            var clienteDTOs = new List<ClienteDTO>();
+            
+            var request = _httpContextAccessor.HttpContext.Request;
+            var baseUrl = $"{request.Scheme}://{request.Host}";
+
+            foreach (var cliente in clientes)
+            {
+                var constanciaUrl = string.IsNullOrEmpty(cliente.ConstanciaFiscal) 
+                    ? null 
+                    : $"{baseUrl}/{cliente.ConstanciaFiscal.Replace("\\", "/")}";
+
+                clienteDTOs.Add(new ClienteDTO
+                {
+                    Id = cliente.Id,
+                    Nombre = cliente.Nombre,
+                    RazonSocial = cliente.RazonSocial,
+                    Rfc = cliente.Rfc,
+                    ConstanciaFiscal = constanciaUrl,
+                    RepresentanteComercial = cliente.RepresentanteComercial,
+                    TipoCliente = cliente.TipoCliente,
+                    Activo = cliente.Activo,
+                    FechaRegistro = cliente.FechaRegistro,
+                    UsuarioRegistro = cliente.UsuarioRegistro,
+                    Sucursales = cliente.Sucursales?.Select(s => new SucursalDTO
+                    {
+                        Id = s.Id,
+                        Nombre = s.Nombre,
+                        Direccion = s.Direccion,
+                        EncargadoAlmacen = s.EncargadoAlmacen,
+                        Telefono = s.Telefono,
+                        Correo = s.Correo,
+                        Activo = s.Activo,
+                        IdCliente = s.IdCliente
+                    }).ToList(),
+                    CajasCliente = cliente.CajasCliente?.Select(c => new CajaClienteDTO
+                    {
+                        Id = c.Id,
+                        Nombre = c.Nombre,
+                        Peso = c.Peso,
+                        Precio = c.Precio,
+                        IdCliente = c.IdCliente,
+                        NombreCliente = cliente.Nombre 
+                    }).ToList()
+                });
+            }
+            return clienteDTOs;
+        }
+
         public async Task<ClienteDTO> GetClienteByIdAsync(int id)
         {
             var cliente = await _clienteRepository.GetByIdAsync(id);

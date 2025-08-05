@@ -39,5 +39,6 @@ namespace AppAPIEmpacadora.Models.Entities
 
         // Navegación
         public ICollection<ProductoPedido> ProductosPedido { get; set; }
+        public ICollection<OrdenPedidoCliente> OrdenesPedidoCliente { get; set; }
     }
 } 

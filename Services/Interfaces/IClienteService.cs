@@ -7,6 +7,7 @@ namespace AppAPIEmpacadora.Services.Interfaces
     public interface IClienteService
     {
         Task<IEnumerable<ClienteSummaryDTO>> GetClientesAsync();
+        Task<IEnumerable<ClienteDTO>> GetClientesDetalladosAsync();
         Task<ClienteDTO> GetClienteByIdAsync(int id);
         Task<ClienteDTO> CreateClienteAsync(CreateClienteDTO createClienteDto, string usuario);
         Task<ClienteDTO> UpdateClienteAsync(int id, UpdateClienteDTO updateClienteDto);

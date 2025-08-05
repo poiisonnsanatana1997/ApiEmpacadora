@@ -81,7 +81,7 @@ namespace AppAPIEmpacadora.Models.DTOs
     public class PedidoTarimaDTO
     {
         public int IdPedidoCliente { get; set; }
-        public string Observaciones { get; set; }
+        public string? Observaciones { get; set; }
         public string Estatus { get; set; }
         public DateTime? FechaEmbarque { get; set; }
         public DateTime FechaRegistro { get; set; }

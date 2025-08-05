@@ -7,9 +7,13 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "IIS Local": {
-      "commandName": "IIS",
-      "launchUrl": "http://localhost/AppAPIEmpacadora/swagger"
+    "Perfil 1": {
+      "commandName": "IIS"
+    },
+    "Perfil 2": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "http://localhost:57664/swagger"
     }
   },
   "$schema": "https://json.schemastore.org/launchsettings.json",
@@ -22,7 +26,7 @@
     },
     "iisExpress": {
       "applicationUrl": "http://localhost:57664/",
-      "sslPort": 44385
+      "sslPort": 0
     }
   }
 }

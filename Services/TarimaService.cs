@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Linq;
 using System;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace AppAPIEmpacadora.Services
 {
@@ -15,11 +16,13 @@ namespace AppAPIEmpacadora.Services
     {
         private readonly ITarimaRepository _tarimaRepository;
         private readonly ApplicationDbContext _context;
+        private readonly IServiceProvider _serviceProvider;
 
-        public TarimaService(ITarimaRepository tarimaRepository, ApplicationDbContext context)
+        public TarimaService(ITarimaRepository tarimaRepository, ApplicationDbContext context, IServiceProvider serviceProvider)
         {
             _tarimaRepository = tarimaRepository;
             _context = context;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<IEnumerable<TarimaDTO>> GetTarimasAsync()
@@ -168,6 +171,13 @@ namespace AppAPIEmpacadora.Services
 
                 await _context.SaveChangesAsync();
                 await transaction.CommitAsync();
+
+                // Calcular y actualizar porcentaje de surtido si se asignó a un pedido cliente
+                if (createTarimaDto.IdPedidoCliente > 0)
+                {
+                    var pedidoClienteService = _serviceProvider.GetRequiredService<IPedidoClienteService>();
+                    await pedidoClienteService.ActualizarPorcentajeSurtidoAsync(createTarimaDto.IdPedidoCliente.Value);
+                }
 
                 return new CreateTarimaResponseDTO
                 {
@@ -354,6 +364,17 @@ namespace AppAPIEmpacadora.Services
                 var tarimaActualizada = await _tarimaRepository.UpdateAsync(tarima);
 
                 await transaction.CommitAsync();
+
+                // Calcular y actualizar porcentaje de surtido si la tarima está asignada a un pedido cliente
+                var pedidoTarima = await _context.PedidoTarimas
+                    .Where(pt => pt.IdTarima == tarimaActualizada.Id)
+                    .FirstOrDefaultAsync();
+                
+                if (pedidoTarima != null)
+                {
+                    var pedidoClienteService = _serviceProvider.GetRequiredService<IPedidoClienteService>();
+                    await pedidoClienteService.ActualizarPorcentajeSurtidoAsync(pedidoTarima.IdPedidoCliente);
+                }
 
                 // Obtener la tarima actualizada con clasificaciones para calcular la cantidad total
                 var tarimaConClasificaciones = await _tarimaRepository.GetByIdWithClasificacionesAsync(tarimaActualizada.Id);

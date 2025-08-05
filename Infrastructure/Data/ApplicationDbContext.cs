@@ -28,9 +28,11 @@ namespace AppAPIEmpacadora.Infrastructure.Data
         public DbSet<TarimaClasificacion> TarimaClasificaciones { get; set; }
         public DbSet<CajaCliente> CajaClientes { get; set; }
         public DbSet<PedidoCliente> PedidosCliente { get; set; }
+        public DbSet<OrdenPedidoCliente> OrdenesPedidoCliente { get; set; }
         public DbSet<Merma> Mermas { get; set; }
         public DbSet<Retorno> Retornos { get; set; }
         public DbSet<PedidoTarima> PedidoTarimas { get; set; }
+        public DbSet<Caja> Cajas { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -319,6 +321,29 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            // Configuración de la tabla OrdenPedidoCliente
+            modelBuilder.Entity<OrdenPedidoCliente>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Tipo).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Cantidad).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Peso).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.FechaRegistro).IsRequired();
+                entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
+
+                // Relación con Producto (opcional)
+                entity.HasOne(e => e.Producto)
+                    .WithMany(p => p.OrdenesPedidoCliente)
+                    .HasForeignKey(e => e.IdProducto)
+                    .OnDelete(DeleteBehavior.SetNull);
+
+                // Relación con PedidoCliente
+                entity.HasOne(e => e.PedidoCliente)
+                    .WithMany(pc => pc.OrdenesPedidoCliente)
+                    .HasForeignKey(e => e.IdPedidoCliente)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
             // Configuración de la tabla Merma
             modelBuilder.Entity<Merma>(entity =>
             {
@@ -357,6 +382,23 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.HasOne(pt => pt.Tarima)
                     .WithMany(t => t.PedidoTarimas)
                     .HasForeignKey(pt => pt.IdTarima);
+            });
+
+            // Configuración de la tabla Caja
+            modelBuilder.Entity<Caja>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Tipo).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Cantidad).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.Peso).HasColumnType("decimal(18,2)");
+                entity.Property(e => e.FechaRegistro).IsRequired();
+                entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
+
+                // Relación con Clasificacion
+                entity.HasOne(c => c.Clasificacion)
+                    .WithMany()
+                    .HasForeignKey(c => c.IdClasificacion)
+                    .OnDelete(DeleteBehavior.SetNull);
             });
         }
     }

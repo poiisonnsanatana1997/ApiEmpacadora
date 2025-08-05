@@ -26,6 +26,13 @@ namespace AppAPIEmpacadora.Controllers
             return Ok(clientes);
         }
 
+        [HttpGet("detallados")]
+        public async Task<ActionResult<IEnumerable<ClienteDTO>>> GetClientesDetallados()
+        {
+            var clientes = await _clienteService.GetClientesDetalladosAsync();
+            return Ok(clientes);
+        }
+
         [HttpGet("{id}")]
         public async Task<ActionResult<ClienteDTO>> GetCliente(int id)
         {

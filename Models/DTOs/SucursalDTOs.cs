@@ -16,6 +16,14 @@ namespace AppAPIEmpacadora.Models.DTOs
         public int IdCliente { get; set; }
     }
 
+    public class SucursalSummaryDTO
+    {
+        public int Id { get; set; }
+        public string Nombre { get; set; }
+        public string Direccion { get; set; }
+        public string? EncargadoAlmacen { get; set; }
+    }
+
     public class CreateSucursalDTO
     {
         [Required]

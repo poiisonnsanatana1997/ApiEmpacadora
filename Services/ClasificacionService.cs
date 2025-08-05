@@ -38,7 +38,8 @@ namespace AppAPIEmpacadora.Services
                     L = clasificacion.L,
                     M = clasificacion.M,
                     S = clasificacion.S,
-                    Retornos = clasificacion.Retornos
+                    Retornos = clasificacion.Retornos,
+                    PorcentajeClasificado = clasificacion.PorcentajeClasificado
                 });
             }
             return clasificacionDTOs;
@@ -61,7 +62,8 @@ namespace AppAPIEmpacadora.Services
                 L = clasificacion.L,
                 M = clasificacion.M,
                 S = clasificacion.S,
-                Retornos = clasificacion.Retornos
+                Retornos = clasificacion.Retornos,
+                PorcentajeClasificado = clasificacion.PorcentajeClasificado
             };
         }
 
@@ -125,7 +127,8 @@ namespace AppAPIEmpacadora.Services
                 L = nuevaClasificacion.L,
                 M = nuevaClasificacion.M,
                 S = nuevaClasificacion.S,
-                Retornos = nuevaClasificacion.Retornos
+                Retornos = nuevaClasificacion.Retornos,
+                PorcentajeClasificado = nuevaClasificacion.PorcentajeClasificado
             };
         }
 
@@ -142,6 +145,7 @@ namespace AppAPIEmpacadora.Services
             if (updateClasificacionDto.M.HasValue) clasificacion.M = updateClasificacionDto.M.Value;
             if (updateClasificacionDto.S.HasValue) clasificacion.S = updateClasificacionDto.S.Value;
             if (updateClasificacionDto.Retornos.HasValue) clasificacion.Retornos = updateClasificacionDto.Retornos.Value;
+            if (updateClasificacionDto.PorcentajeClasificado.HasValue) clasificacion.PorcentajeClasificado = updateClasificacionDto.PorcentajeClasificado.Value;
 
             var clasificacionActualizada = await _clasificacionRepository.UpdateAsync(clasificacion);
 
@@ -157,7 +161,8 @@ namespace AppAPIEmpacadora.Services
                 L = clasificacionActualizada.L,
                 M = clasificacionActualizada.M,
                 S = clasificacionActualizada.S,
-                Retornos = clasificacionActualizada.Retornos
+                Retornos = clasificacionActualizada.Retornos,
+                PorcentajeClasificado = clasificacionActualizada.PorcentajeClasificado
             };
         }
 

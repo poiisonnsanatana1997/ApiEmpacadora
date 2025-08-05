@@ -7,6 +7,7 @@ namespace AppAPIEmpacadora.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize]
     public class ProveedoresController : ControllerBase
     {
         private readonly IProveedorService _proveedorService;

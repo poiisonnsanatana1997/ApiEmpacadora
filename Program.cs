@@ -72,8 +72,10 @@ builder.Services.AddScoped<ITarimaRepository, TarimaRepository>();
 builder.Services.AddScoped<IClasificacionRepository, ClasificacionRepository>();
 builder.Services.AddScoped<ICajaClienteRepository, CajaClienteRepository>();
 builder.Services.AddScoped<IPedidoClienteRepository, PedidoClienteRepository>();
+builder.Services.AddScoped<IOrdenPedidoClienteRepository, OrdenPedidoClienteRepository>();
 builder.Services.AddScoped<IMermaRepository, MermaRepository>();
 builder.Services.AddScoped<IRetornoRepository, RetornoRepository>();
+builder.Services.AddScoped<ICajaRepository, CajaRepository>();
 
 // Registro de servicios
 builder.Services.AddScoped<IUserService, UserService>();
@@ -89,8 +91,10 @@ builder.Services.AddScoped<ITarimaService, TarimaService>();
 builder.Services.AddScoped<IClasificacionService, ClasificacionService>();
 builder.Services.AddScoped<ICajaClienteService, CajaClienteService>();
 builder.Services.AddScoped<IPedidoClienteService, PedidoClienteService>();
+builder.Services.AddScoped<IOrdenPedidoClienteService, OrdenPedidoClienteService>();
 builder.Services.AddScoped<IMermaService, MermaService>();
 builder.Services.AddScoped<IRetornoService, RetornoService>();
+builder.Services.AddScoped<ICajaService, CajaService>();
 
 // Configuración de JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -108,7 +112,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Configuración de CORS SOLO para desarrollo
+// Configuración de CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("PermitirTodo", policy =>
@@ -116,7 +120,6 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin()
               .AllowAnyHeader()
               .AllowAnyMethod();
-        // No usar AllowCredentials con AllowAnyOrigin
     });
 });
 
@@ -130,28 +133,22 @@ builder.Services.AddControllers(options =>
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "API Empacadora V1");
-        c.RoutePrefix = "swagger";
-    });
-}
+// Habilitar Swagger en todos los entornos para desarrollo y pruebas
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
 
-// Middleware para manejar preflight OPTIONS (opcional)
+// Middleware para manejar preflight OPTIONS
 app.Use(async (context, next) =>
 {
     if (context.Request.Method == "OPTIONS")
     {
-        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-        context.Response.Headers.Add("Access-Control-Allow-Headers", "Content-Type, Authorization");
-        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
+        context.Response.Headers["Access-Control-Allow-Origin"] = "*";
+        context.Response.Headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With";
+        context.Response.Headers["Access-Control-Allow-Methods"] = "GET, POST, PUT, PATCH, DELETE, OPTIONS";
         context.Response.StatusCode = 200;
         await context.Response.CompleteAsync();
         return;
@@ -159,7 +156,7 @@ app.Use(async (context, next) =>
     await next();
 });
 
-// Aplica la política de CORS para todos los orígenes
+// Aplica la política de CORS
 app.UseCors("PermitirTodo");
 
 // Agregar middleware de autenticación y autorización

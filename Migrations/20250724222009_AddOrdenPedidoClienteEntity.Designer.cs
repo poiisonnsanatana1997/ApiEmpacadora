@@ -4,6 +4,7 @@ using AppAPIEmpacadora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppAPIEmpacadora.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250724222009_AddOrdenPedidoClienteEntity")]
+    partial class AddOrdenPedidoClienteEntity
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -56,7 +59,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdClasificacion");
 
-                    b.ToTable("Cajas", (string)null);
+                    b.ToTable("Cajas");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.CajaCliente", b =>
@@ -85,7 +88,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdCliente");
 
-                    b.ToTable("CajaClientes", (string)null);
+                    b.ToTable("CajaClientes");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.CantidadPedido", b =>
@@ -133,7 +136,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdPedidoProveedor");
 
-                    b.ToTable("CantidadesPedido", (string)null);
+                    b.ToTable("CantidadesPedido");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Clasificacion", b =>
@@ -164,9 +167,6 @@ namespace AppAPIEmpacadora.Migrations
                     b.Property<decimal>("PesoTotal")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<decimal>("PorcentajeClasificado")
-                        .HasColumnType("decimal(18,2)");
-
                     b.Property<decimal>("Retornos")
                         .HasColumnType("decimal(18,2)");
 
@@ -188,7 +188,7 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("Lote")
                         .IsUnique();
 
-                    b.ToTable("Clasificaciones", (string)null);
+                    b.ToTable("Clasificaciones");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Cliente", b =>
@@ -245,7 +245,7 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("Nombre")
                         .IsUnique();
 
-                    b.ToTable("Clientes", (string)null);
+                    b.ToTable("Clientes");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Merma", b =>
@@ -284,7 +284,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdClasificacion");
 
-                    b.ToTable("Mermas", (string)null);
+                    b.ToTable("Mermas");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.OrdenPedidoCliente", b =>
@@ -326,7 +326,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdProducto");
 
-                    b.ToTable("OrdenesPedidoCliente", (string)null);
+                    b.ToTable("OrdenesPedidoCliente");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoCliente", b =>
@@ -361,11 +361,9 @@ namespace AppAPIEmpacadora.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("Observaciones")
+                        .IsRequired()
                         .HasMaxLength(300)
                         .HasColumnType("nvarchar(300)");
-
-                    b.Property<decimal>("PorcentajeSurtido")
-                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("UsuarioModificacion")
                         .HasMaxLength(50)
@@ -382,7 +380,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdSucursal");
 
-                    b.ToTable("PedidosCliente", (string)null);
+                    b.ToTable("PedidosCliente");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoProveedor", b =>
@@ -433,7 +431,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdProveedor");
 
-                    b.ToTable("PedidosProveedor", (string)null);
+                    b.ToTable("PedidosProveedor");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.PedidoTarima", b =>
@@ -448,7 +446,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdTarima");
 
-                    b.ToTable("PedidoTarimas", (string)null);
+                    b.ToTable("PedidoTarimas");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Permission", b =>
@@ -482,7 +480,7 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Permissions", (string)null);
+                    b.ToTable("Permissions");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Producto", b =>
@@ -541,7 +539,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Productos", (string)null);
+                    b.ToTable("Productos");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.ProductoPedido", b =>
@@ -556,7 +554,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdProducto");
 
-                    b.ToTable("ProductosPedido", (string)null);
+                    b.ToTable("ProductosPedido");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Proveedor", b =>
@@ -605,7 +603,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Proveedores", (string)null);
+                    b.ToTable("Proveedores");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Retorno", b =>
@@ -644,7 +642,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdClasificacion");
 
-                    b.ToTable("Retornos", (string)null);
+                    b.ToTable("Retornos");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Role", b =>
@@ -679,7 +677,7 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.RolePermission", b =>
@@ -697,7 +695,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("PermissionId");
 
-                    b.ToTable("RolePermissions", (string)null);
+                    b.ToTable("RolePermissions");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Sucursal", b =>
@@ -752,7 +750,7 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("Nombre")
                         .IsUnique();
 
-                    b.ToTable("Sucursales", (string)null);
+                    b.ToTable("Sucursales");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Tarima", b =>
@@ -804,7 +802,7 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("Codigo")
                         .IsUnique();
 
-                    b.ToTable("Tarimas", (string)null);
+                    b.ToTable("Tarimas");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.TarimaClasificacion", b =>
@@ -830,7 +828,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasIndex("IdClasificacion");
 
-                    b.ToTable("TarimaClasificaciones", (string)null);
+                    b.ToTable("TarimaClasificaciones");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.User", b =>
@@ -888,7 +886,7 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("Username")
                         .IsUnique();
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.UserProfile", b =>
@@ -942,7 +940,7 @@ namespace AppAPIEmpacadora.Migrations
 
                     b.HasKey("UserId");
 
-                    b.ToTable("UserProfiles", (string)null);
+                    b.ToTable("UserProfiles");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.Caja", b =>

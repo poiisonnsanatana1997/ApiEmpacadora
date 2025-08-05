@@ -18,6 +18,9 @@ namespace AppAPIEmpacadora.Models.Entities
         [Column(TypeName = "decimal(18,2)")]
         public decimal PesoTotal { get; set; }
 
+        [Column(TypeName = "decimal(18,2)")]
+        public decimal PorcentajeClasificado { get; set; }
+
         [Required]
         public DateTime FechaRegistro { get; set; }
 

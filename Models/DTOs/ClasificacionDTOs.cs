@@ -15,6 +15,7 @@ namespace AppAPIEmpacadora.Models.DTOs
         public decimal M { get; set; }
         public decimal S { get; set; }
         public decimal Retornos { get; set; }
+        public decimal PorcentajeClasificado { get; set; }
     }
 
     public class CreateClasificacionDTO
@@ -34,6 +35,7 @@ namespace AppAPIEmpacadora.Models.DTOs
         public decimal? M { get; set; }
         public decimal? S { get; set; }
         public decimal? Retornos { get; set; }
+        public decimal? PorcentajeClasificado { get; set; }
     }
 
     public class AjustePesoClasificacionDTO

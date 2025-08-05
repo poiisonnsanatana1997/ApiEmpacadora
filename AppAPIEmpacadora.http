@@ -1,6 +1,75 @@
-@AppAPIEmpacadora_HostAddress = http://localhost:5177
+### Variables de entorno
+@baseUrl = https://localhost:7001
+@token = {{login.response.body.token}}
 
-GET {{AppAPIEmpacadora_HostAddress}}/weatherforecast/
-Accept: application/json
+### Login para obtener token
+# @name login
+POST {{baseUrl}}/api/Auth/login
+Content-Type: application/json
 
-###
+{
+    "username": "admin",
+    "password": "admin123"
+}
+
+### Crear Pedido Cliente con Órdenes
+POST {{baseUrl}}/api/PedidoCliente/con-ordenes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "observaciones": "Pedido de prueba con múltiples órdenes",
+    "estatus": "Pendiente",
+    "fechaEmbarque": "2024-12-25T10:00:00",
+    "idSucursal": 1,
+    "idCliente": 1,
+    "fechaRegistro": "2024-12-20T08:00:00",
+    "activo": true,
+    "ordenes": [
+        {
+            "tipo": "XL",
+            "cantidad": 100,
+            "peso": 50.5,
+            "idProducto": 1
+        },
+        {
+            "tipo": "L",
+            "cantidad": 200,
+            "peso": 75.2,
+            "idProducto": 2
+        },
+        {
+            "tipo": "M",
+            "cantidad": 150,
+            "peso": 45.8,
+            "idProducto": 1
+        }
+    ]
+}
+
+### Obtener todos los pedidos cliente
+GET {{baseUrl}}/api/PedidoCliente
+Authorization: Bearer {{token}}
+
+### Obtener pedido cliente por ID
+GET {{baseUrl}}/api/PedidoCliente/1
+Authorization: Bearer {{token}}
+
+### Obtener pedidos cliente con detalles
+GET {{baseUrl}}/api/PedidoCliente/con-detalles
+Authorization: Bearer {{token}}
+
+### Crear Pedido Cliente simple (endpoint original)
+POST {{baseUrl}}/api/PedidoCliente
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+    "observaciones": "Pedido simple de prueba",
+    "estatus": "Pendiente",
+    "fechaEmbarque": "2024-12-25T10:00:00",
+    "idSucursal": 1,
+    "idCliente": 1,
+    "fechaRegistro": "2024-12-20T08:00:00",
+    "activo": true
+}
