@@ -161,7 +161,33 @@ namespace AppAPIEmpacadora.Services
             entity.FechaModificacion = DateTime.Now;
             entity.UsuarioModificacion = usuarioModificacion;
             
+            // Regla de negocio: Si el estatus es "Cancelado" o "Devuelto", desasignar tarimas y actualizar porcentaje
+            if (estatus.Equals("Cancelado", StringComparison.OrdinalIgnoreCase) || 
+                estatus.Equals("Devuelto", StringComparison.OrdinalIgnoreCase))
+            {
+                await DesasignarTarimasYActualizarSurtidoAsync(id, usuarioModificacion);
+                entity.PorcentajeSurtido = 0;
+            }
+            
             return await _repo.ActualizarAsync(entity);
+        }
+        
+        private async Task DesasignarTarimasYActualizarSurtidoAsync(int pedidoId, string usuarioModificacion)
+        {
+            try
+            {
+                // Desasignar todas las tarimas del pedido
+                await _repo.DesasignarTodasLasTarimasAsync(pedidoId);
+                
+                // Log de auditoría (opcional - se puede implementar un sistema de logging)
+                // _logger.LogInformation($"Tarimas desasignadas del pedido {pedidoId} por usuario {usuarioModificacion} debido a cambio de estatus");
+            }
+            catch (Exception ex)
+            {
+                // Log del error (opcional)
+                // _logger.LogError(ex, $"Error al desasignar tarimas del pedido {pedidoId}");
+                throw new InvalidOperationException($"Error al desasignar tarimas del pedido {pedidoId}: {ex.Message}");
+            }
         }
         
         public async Task<bool> EliminarAsync(int id)
@@ -216,7 +242,7 @@ namespace AppAPIEmpacadora.Services
             foreach (var pedido in pedidos)
             {
                 // Validación: El pedido no debe estar cancelado
-                if (pedido.Estatus?.ToLower() == "Cancelado")
+                if (pedido.Estatus?.ToLower() == "cancelado")
                 {
                     continue;
                 }
@@ -276,6 +302,65 @@ namespace AppAPIEmpacadora.Services
             return resultado;
         }
 
+        public async Task<PedidoClientePorAsignarDTO> ObtenerDisponibilidadCajasPorPedidoAsync(int idPedido, string tipo, int? idProducto = null)
+        {
+            // Obtener el pedido específico con todas sus relaciones
+            var pedido = await _repo.ObtenerPorIdConRelacionesCompletasAsync(idPedido);
+            if (pedido == null) return null;
+
+            // Validación: El pedido no debe estar cancelado
+            if (pedido.Estatus?.ToLower() == "Cancelado")
+            {
+                return null;
+            }
+
+            // Obtener la orden del tipo específico
+            var orden = pedido.OrdenesPedidoCliente?.FirstOrDefault(o => o.Tipo == tipo);
+            if (orden == null) return null;
+
+            // Validación: Filtrar por ID de producto si se especifica
+            if (idProducto.HasValue && orden.IdProducto != idProducto.Value)
+            {
+                return null;
+            }
+
+            // Calcular cantidad asignada desde tarimas
+            var cantidadAsignada = pedido.PedidoTarimas?
+                .SelectMany(pt => pt.Tarima.TarimasClasificaciones)
+                .Where(tc => tc.Tipo == tipo)
+                .Sum(tc => tc.Cantidad ?? 0) ?? 0;
+
+            // Calcular cantidad disponible
+            var cantidadDisponible = (orden.Cantidad ?? 0) - cantidadAsignada;
+
+            // Devolver el DTO con la información de disponibilidad
+            return new PedidoClientePorAsignarDTO
+            {
+                Id = pedido.Id,
+                Tipo = orden.Tipo,
+                Cantidad = (int)cantidadDisponible, // Cantidad disponible (puede ser 0)
+                Peso = orden.Peso ?? 0,
+                PesoCajaCliente = pedido.Cliente?.CajasCliente?.FirstOrDefault()?.Peso ?? 0,
+                Producto = new ProductoSimpleDTO
+                {
+                    Id = orden.Producto?.Id ?? 0,
+                    Nombre = orden.Producto?.Nombre ?? string.Empty,
+                    Codigo = orden.Producto?.Codigo ?? string.Empty,
+                    Variedad = orden.Producto?.Variedad ?? string.Empty
+                },
+                Cliente = new ClienteSummaryDTO
+                {
+                    Id = pedido.Cliente?.Id ?? 0,
+                    RazonSocial = pedido.Cliente?.RazonSocial ?? string.Empty
+                },
+                Sucursal = new SucursalSummaryDTO
+                {
+                    Id = pedido.Sucursal?.Id ?? 0,
+                    Nombre = pedido.Sucursal?.Nombre ?? string.Empty
+                }
+            };
+        }
+
         public async Task<PedidoClienteProgresoDTO> ObtenerProgresoAsync(int id)
         {
             var entity = await _repo.ObtenerPorIdAsync(id);
@@ -317,7 +402,16 @@ namespace AppAPIEmpacadora.Services
                 {
                     Tipo = tc.Tipo,
                     Peso = tc.Peso,
-                    Cantidad = tc.Cantidad
+                    Cantidad = tc.Cantidad,
+                    Producto = tc.Clasificacion?.PedidoProveedor?.ProductosPedido?.FirstOrDefault()?.Producto != null 
+                        ? new ProductoSimpleDTO
+                        {
+                            Id = tc.Clasificacion.PedidoProveedor.ProductosPedido.First().Producto.Id,
+                            Codigo = tc.Clasificacion.PedidoProveedor.ProductosPedido.First().Producto.Codigo,
+                            Nombre = tc.Clasificacion.PedidoProveedor.ProductosPedido.First().Producto.Nombre,
+                            Variedad = tc.Clasificacion.PedidoProveedor.ProductosPedido.First().Producto.Variedad
+                        }
+                        : null
                 }).ToList() ?? new List<TarimaClasificacionProgresoDTO>()
             };
         }
@@ -358,9 +452,20 @@ namespace AppAPIEmpacadora.Services
             {
                 var porcentaje = await CalcularPorcentajeSurtidoAsync(idPedidoCliente);
                 var pedido = await _repo.ObtenerPorIdConRelacionesCompletasAsync(idPedidoCliente);
+                
                 if (pedido != null)
                 {
+                    // Actualizar porcentaje
                     pedido.PorcentajeSurtido = porcentaje;
+                    
+                    // Determinar y actualizar estatus automáticamente
+                    var nuevoEstatus = DeterminarEstatusPorPorcentaje(porcentaje);
+                    if (pedido.Estatus != nuevoEstatus)
+                    {
+                        pedido.Estatus = nuevoEstatus;
+                        pedido.FechaModificacion = DateTime.Now;
+                    }
+                    
                     return await _repo.ActualizarAsync(pedido);
                 }
                 return false;
@@ -368,6 +473,122 @@ namespace AppAPIEmpacadora.Services
             catch
             {
                 return false;
+            }
+        }
+
+        /// <summary>
+        /// Determina el estatus del pedido basado en el porcentaje de surtido
+        /// </summary>
+        /// <param name="porcentaje">Porcentaje de surtido calculado</param>
+        /// <returns>Estatus correspondiente al porcentaje</returns>
+        private string DeterminarEstatusPorPorcentaje(decimal porcentaje)
+        {
+            return porcentaje switch
+            {
+                0 => "Pendiente",
+                100 => "Surtido",
+                _ => "Surtiendo"  // Cualquier valor entre 0 y 100
+            };
+        }
+
+        /// <summary>
+        /// Asigna múltiples tarimas a un pedido y calcula el porcentaje de surtido
+        /// </summary>
+        /// <param name="pedidoId">ID del pedido</param>
+        /// <param name="tarimaIds">Lista de IDs de las tarimas a asignar</param>
+        /// <param name="usuario">Usuario que realiza la asignación</param>
+        /// <returns>Pedido actualizado con el nuevo porcentaje de surtido</returns>
+        public async Task<PedidoClienteResponseDTO> AsignarTarimasYCalcularSurtidoAsync(int pedidoId, List<int> tarimaIds, string usuario)
+        {
+            // Validar que el pedido existe
+            var pedido = await _repo.ObtenerPorIdAsync(pedidoId);
+            if (pedido == null)
+            {
+                throw new ArgumentException("El pedido no existe");
+            }
+
+            // Validar que se proporcionaron tarimas
+            if (tarimaIds == null || !tarimaIds.Any())
+            {
+                throw new ArgumentException("No se proporcionaron tarimas para asignar");
+            }
+
+            // Asignar las tarimas al pedido
+            var asignacionExitosa = await _repo.AsignarTarimasAPedidoAsync(pedidoId, tarimaIds);
+            if (!asignacionExitosa)
+            {
+                throw new InvalidOperationException("Error al asignar las tarimas. Verifique que las tarimas existan y estén disponibles.");
+            }
+
+            // Calcular el nuevo porcentaje de surtido
+            var nuevoPorcentaje = await _repo.CalcularPorcentajeSurtidoAsync(pedidoId);
+
+            // Actualizar el pedido con el nuevo porcentaje
+            pedido.PorcentajeSurtido = nuevoPorcentaje;
+            pedido.FechaModificacion = DateTime.Now;
+            pedido.UsuarioModificacion = usuario;
+
+            // Determinar el nuevo estatus basado en el porcentaje
+            var nuevoEstatus = DeterminarEstatusPorPorcentaje(nuevoPorcentaje);
+            if (pedido.Estatus != nuevoEstatus)
+            {
+                pedido.Estatus = nuevoEstatus;
+            }
+
+            // Guardar los cambios
+            await _repo.ActualizarAsync(pedido);
+
+            // Retornar el pedido actualizado
+            return MapToResponseDTO(pedido);
+        }
+
+        /// <summary>
+        /// Desasigna múltiples tarimas de pedidos y recalcula el porcentaje de surtido
+        /// </summary>
+        /// <param name="desasignaciones">Lista de desasignaciones a realizar</param>
+        /// <param name="usuario">Usuario que realiza la desasignación</param>
+        public async Task DesasignarTarimasAsync(List<DesasignacionTarimaDTO> desasignaciones, string usuario)
+        {
+            // Validar que se proporcionaron desasignaciones
+            if (desasignaciones == null || !desasignaciones.Any())
+            {
+                throw new ArgumentException("No se proporcionaron desasignaciones para realizar");
+            }
+
+            // Eliminar las relaciones PedidoTarima
+            var eliminacionExitosa = await _repo.EliminarPedidoTarimasAsync(desasignaciones);
+            if (!eliminacionExitosa)
+            {
+                throw new InvalidOperationException("Error al eliminar las relaciones. Verifique que todas las asignaciones existan.");
+            }
+
+            // Obtener los IDs únicos de pedidos afectados
+            var pedidosAfectados = desasignaciones.Select(d => d.IdPedido).Distinct().ToList();
+
+            // Actualizar cada pedido afectado
+            foreach (var pedidoId in pedidosAfectados)
+            {
+                var pedido = await _repo.ObtenerPorIdAsync(pedidoId);
+                if (pedido != null)
+                {
+                    // Calcular el nuevo porcentaje de surtido
+                    var nuevoPorcentaje = await _repo.CalcularPorcentajeSurtidoAsync(pedidoId);
+
+                    // Actualizar el pedido
+                    pedido.PorcentajeSurtido = nuevoPorcentaje;
+                    pedido.FechaModificacion = DateTime.Now;
+                    pedido.UsuarioModificacion = usuario;
+
+                    // Determinar el nuevo estatus basado en el porcentaje
+                    var nuevoEstatus = DeterminarEstatusPorPorcentaje(nuevoPorcentaje);
+                    if (pedido.Estatus != nuevoEstatus)
+                    {
+                        pedido.Estatus = nuevoEstatus;
+                    }
+
+                    // Guardar los cambios
+                    await _repo.ActualizarAsync(pedido);
+                }
             }
         }
     }

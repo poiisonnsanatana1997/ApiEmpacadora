@@ -12,6 +12,8 @@ namespace AppAPIEmpacadora.Models.DTOs
         public string? ConstanciaFiscal { get; set; }
         public string? RepresentanteComercial { get; set; }
         public string? TipoCliente { get; set; }
+        public string Telefono { get; set; }
+        public string? Correo { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaRegistro { get; set; }
         public string UsuarioRegistro { get; set; }
@@ -26,6 +28,8 @@ namespace AppAPIEmpacadora.Models.DTOs
         public string Nombre { get; set; }
         public string RazonSocial { get; set; }
         public string Rfc { get; set; }
+        public string Telefono { get; set; }
+        public string? Correo { get; set; }
         public bool Activo { get; set; }
         public DateTime FechaRegistro { get; set; }
     }
@@ -52,6 +56,14 @@ namespace AppAPIEmpacadora.Models.DTOs
         [StringLength(50)]
         public string? TipoCliente { get; set; }
 
+        [Required]
+        [StringLength(20)]
+        public string Telefono { get; set; }
+
+        [StringLength(100)]
+        public string? Correo { get; set; }
+
+        [Required]
         public bool Activo { get; set; } = true;
 
         [Required]
@@ -76,6 +88,12 @@ namespace AppAPIEmpacadora.Models.DTOs
 
         [StringLength(50)]
         public string? TipoCliente { get; set; }
+
+        [StringLength(20)]
+        public string? Telefono { get; set; }
+
+        [StringLength(100)]
+        public string? Correo { get; set; }
 
         public bool? Activo { get; set; }
     }

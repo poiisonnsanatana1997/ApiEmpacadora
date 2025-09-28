@@ -146,5 +146,14 @@ namespace AppAPIEmpacadora.Models.DTOs
         public string Tipo { get; set; }
         public decimal? Peso { get; set; }
         public decimal? Cantidad { get; set; }
+        public ProductoSimpleDTO? Producto { get; set; }
     }
+
+    public class DesasignacionTarimaDTO
+    {
+        public int IdPedido { get; set; }
+        public int IdTarima { get; set; }
+    }
+
+
 } 

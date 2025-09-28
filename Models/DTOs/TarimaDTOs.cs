@@ -47,6 +47,7 @@ namespace AppAPIEmpacadora.Models.DTOs
         [Required]
         [Range(1, int.MaxValue, ErrorMessage = "La cantidad de tarimas debe ser mayor a 0")]
         public int CantidadTarimas { get; set; }
+        public int Cantidad { get; set; }
     }
 
     public class UpdateTarimaDTO
@@ -100,6 +101,7 @@ namespace AppAPIEmpacadora.Models.DTOs
         public decimal PesoTotal { get; set; }
         public DateTime FechaRegistro { get; set; }
         public string UsuarioRegistro { get; set; }
+        public List<ProductoSimpleDTO> Productos { get; set; } = new List<ProductoSimpleDTO>();
     }
 
     public class TarimaParcialCompletaDTO
@@ -138,5 +140,20 @@ namespace AppAPIEmpacadora.Models.DTOs
         [Required(ErrorMessage = "El tipo es requerido")]
         [StringLength(50, ErrorMessage = "El tipo no puede exceder 50 caracteres")]
         public string Tipo { get; set; }
+    }
+
+    public class TarimaAsignacionRequestDTO{
+        [Required(ErrorMessage = "El ID de la tarima es requerido")]
+        public int IdTarima { get; set; }
+
+        [Required(ErrorMessage = "El ID del producto es requerido")]
+        public int IdProducto { get; set; }
+
+        [Required(ErrorMessage = "El tipo es requerido")]
+        public string Tipo { get; set; }
+
+        [Required(ErrorMessage = "La cantidad es requerida")]
+        [Range(1, int.MaxValue, ErrorMessage = "La cantidad debe ser mayor a 0")]
+        public int Cantidad { get; set; }
     }
 } 

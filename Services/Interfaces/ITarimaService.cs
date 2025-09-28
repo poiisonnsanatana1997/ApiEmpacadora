@@ -11,9 +11,10 @@ namespace AppAPIEmpacadora.Services.Interfaces
         Task<CreateTarimaResponseDTO> CreateTarimaAsync(CreateTarimaDTO createTarimaDto, string usuario);
         Task<TarimaDTO> UpdateTarimaAsync(int id, UpdateTarimaDTO updateTarimaDto, string usuario);
         Task<bool> DeleteTarimaAsync(int id);
+        Task<bool> EliminarTarimaClasificacionAsync(int idTarima, int idClasificacion);
         Task<IEnumerable<TarimaParcialCompletaDTO>> GetTarimasParcialesAsync();
-        
-        // Nuevo método para actualización parcial
+        Task<IEnumerable<TarimaParcialCompletaDTO>> GetTarimasParcialesYCompletasAsync();
         Task<TarimaDTO> UpdateTarimaParcialAsync(TarimaUpdateParcialDTO dto, string usuario);
+        Task<List<PedidoClienteResponseDTO>> BuscarPedidosCompatiblesAsync(List<TarimaAsignacionRequestDTO> tarimasAsignacion);
     }
 } 

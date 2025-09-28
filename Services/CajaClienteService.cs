@@ -52,7 +52,7 @@ namespace AppAPIEmpacadora.Services
             {
                 Nombre = createCajaClienteDTO.Nombre,
                 Peso = createCajaClienteDTO.Peso,
-                Precio = createCajaClienteDTO.Precio,
+                Precio = createCajaClienteDTO.Precio ?? 0,
                 IdCliente = createCajaClienteDTO.IdCliente
             };
 

@@ -29,10 +29,6 @@ namespace AppAPIEmpacadora.Controllers
         public async Task<ActionResult<ClasificacionDTO>> GetClasificacion(int id)
         {
             var clasificacion = await _clasificacionService.GetClasificacionByIdAsync(id);
-            if (clasificacion == null)
-            {
-                return NotFound();
-            }
             return Ok(clasificacion);
         }
 

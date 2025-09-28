@@ -9,6 +9,7 @@ using AppAPIEmpacadora.Infrastructure.Repositories;
 using AppAPIEmpacadora.Repositories.Interfaces;
 using AppAPIEmpacadora.Services;
 using AppAPIEmpacadora.Services.Interfaces;
+using AppAPIEmpacadora.Middleware;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,10 @@ var builder = WebApplication.CreateBuilder(args);
 var cultureInfo = new CultureInfo("en-US");
 CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
 CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
+
+// Configurar logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Add services to the container.
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
@@ -96,6 +101,13 @@ builder.Services.AddScoped<IMermaService, MermaService>();
 builder.Services.AddScoped<IRetornoService, RetornoService>();
 builder.Services.AddScoped<ICajaService, CajaService>();
 
+// Registro de servicios para reportes de tarimas
+builder.Services.AddScoped<ITarimaResumenRepository, TarimaResumenRepository>();
+builder.Services.AddScoped<ITarimaPesoService, TarimaPesoService>();
+
+// Registro del servicio de logging como Singleton para que pueda ser usado en middleware
+builder.Services.AddSingleton<ILoggingService, LoggingService>();
+
 // Configuración de JWT
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -140,6 +152,9 @@ app.UseSwaggerUI();
 app.UseHttpsRedirection();
 
 app.UseStaticFiles();
+
+// Agregar middleware de manejo de excepciones
+app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 // Middleware para manejar preflight OPTIONS
 app.Use(async (context, next) =>

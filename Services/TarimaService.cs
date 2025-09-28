@@ -3,12 +3,7 @@ using AppAPIEmpacadora.Models.DTOs;
 using AppAPIEmpacadora.Models.Entities;
 using AppAPIEmpacadora.Repositories.Interfaces;
 using AppAPIEmpacadora.Services.Interfaces;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using System.Linq;
-using System;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace AppAPIEmpacadora.Services
 {
@@ -141,14 +136,18 @@ namespace AppAPIEmpacadora.Services
                     // Crear la relación TarimaClasificacion solo si se proporciona IdClasificacion
                     if (createTarimaDto.IdClasificacion > 0)
                     {
+
+                        var pesoTotal = (createTarimaDto.Peso ?? 0) * createTarimaDto.Cantidad;
+
                         var tarimaClasificacion = new TarimaClasificacion
                         {
                             IdClasificacion = createTarimaDto.IdClasificacion.Value,
                             IdTarima = nuevaTarima.Id,
-                            Peso = createTarimaDto.Peso ?? 0,
+                            Peso = pesoTotal,
                             Tipo = createTarimaDto.Tipo,
-                            Cantidad = createTarimaDto.CantidadTarimas
+                            Cantidad = createTarimaDto.Cantidad
                         };
+
                         _context.TarimaClasificaciones.Add(tarimaClasificacion);
                     }
 
@@ -163,7 +162,7 @@ namespace AppAPIEmpacadora.Services
                         Observaciones = nuevaTarima.Observaciones,
                         UPC = nuevaTarima.UPC,
                         Peso = nuevaTarima.Peso,
-                        Cantidad = createTarimaDto.IdClasificacion > 0 ? createTarimaDto.CantidadTarimas : null
+                        Cantidad = createTarimaDto.IdClasificacion > 0 ? createTarimaDto.Cantidad : null
                     });
 
                     siguienteNumero++;
@@ -234,9 +233,6 @@ namespace AppAPIEmpacadora.Services
 
         public async Task<bool> DeleteTarimaAsync(int id)
         {
-            var tarima = await _tarimaRepository.GetByIdAsync(id);
-            if (tarima == null) return false;
-
             return await _tarimaRepository.DeleteAsync(id);
         }
 
@@ -275,7 +271,14 @@ namespace AppAPIEmpacadora.Services
                             Cantidad = tc.Cantidad,
                             PesoTotal = tc.Clasificacion?.PesoTotal ?? 0,
                             FechaRegistro = tc.Clasificacion?.FechaRegistro ?? DateTime.MinValue,
-                            UsuarioRegistro = tc.Clasificacion?.UsuarioRegistro ?? string.Empty
+                            UsuarioRegistro = tc.Clasificacion?.UsuarioRegistro ?? string.Empty,
+                            Productos = tc.Clasificacion?.PedidoProveedor?.ProductosPedido?.Select(pp => new ProductoSimpleDTO
+                            {
+                                Id = pp.Producto.Id,
+                                Codigo = pp.Producto.Codigo,
+                                Nombre = pp.Producto.Nombre,
+                                Variedad = pp.Producto.Variedad
+                            }).ToList() ?? new List<ProductoSimpleDTO>()
                         });
                     }
                 }
@@ -303,6 +306,78 @@ namespace AppAPIEmpacadora.Services
             }
 
             return tarimasParciales;
+        }
+
+        public async Task<IEnumerable<TarimaParcialCompletaDTO>> GetTarimasParcialesYCompletasAsync()
+        {
+            var tarimas = await _tarimaRepository.GetTarimasParcialesYCompletasAsync();
+            var tarimasResult = new List<TarimaParcialCompletaDTO>();
+
+            foreach (var tarima in tarimas)
+            {
+                var tarimaDto = new TarimaParcialCompletaDTO
+                {
+                    Id = tarima.Id,
+                    Codigo = tarima.Codigo,
+                    Estatus = tarima.Estatus,
+                    FechaRegistro = tarima.FechaRegistro,
+                    FechaActualizacion = tarima.FechaActualizacion,
+                    UsuarioRegistro = tarima.UsuarioRegistro,
+                    UsuarioModificacion = tarima.UsuarioModificacion,
+                    Observaciones = tarima.Observaciones,
+                    UPC = tarima.UPC,
+                    Peso = tarima.Peso
+                };
+
+                // Mapear TarimasClasificaciones
+                if (tarima.TarimasClasificaciones != null)
+                {
+                    foreach (var tc in tarima.TarimasClasificaciones)
+                    {
+                        tarimaDto.TarimasClasificaciones.Add(new TarimaClasificacionParcialDTO
+                        {
+                            IdClasificacion = tc.IdClasificacion,
+                            Lote = tc.Clasificacion?.Lote ?? string.Empty,
+                            Peso = tc.Peso,
+                            Tipo = tc.Tipo,
+                            Cantidad = tc.Cantidad,
+                            PesoTotal = tc.Clasificacion?.PesoTotal ?? 0,
+                            FechaRegistro = tc.Clasificacion?.FechaRegistro ?? DateTime.MinValue,
+                            UsuarioRegistro = tc.Clasificacion?.UsuarioRegistro ?? string.Empty,
+                            Productos = tc.Clasificacion?.PedidoProveedor?.ProductosPedido?.Select(pp => new ProductoSimpleDTO
+                            {
+                                Id = pp.Producto.Id,
+                                Codigo = pp.Producto.Codigo,
+                                Nombre = pp.Producto.Nombre,
+                                Variedad = pp.Producto.Variedad
+                            }).ToList() ?? new List<ProductoSimpleDTO>()
+                        });
+                    }
+                }
+
+                // Mapear PedidoTarimas
+                if (tarima.PedidoTarimas != null)
+                {
+                    foreach (var pt in tarima.PedidoTarimas)
+                    {
+                        tarimaDto.PedidoTarimas.Add(new PedidoTarimaDTO
+                        {
+                            IdPedidoCliente = pt.IdPedidoCliente,
+                            Observaciones = pt.PedidoCliente?.Observaciones ?? string.Empty,
+                            Estatus = pt.PedidoCliente?.Estatus ?? string.Empty,
+                            FechaEmbarque = pt.PedidoCliente?.FechaEmbarque,
+                            FechaRegistro = pt.PedidoCliente?.FechaRegistro ?? DateTime.MinValue,
+                            UsuarioRegistro = pt.PedidoCliente?.UsuarioRegistro ?? string.Empty,
+                            NombreCliente = pt.PedidoCliente?.Cliente?.Nombre ?? string.Empty,
+                            NombreSucursal = pt.PedidoCliente?.Sucursal?.Nombre ?? string.Empty
+                        });
+                    }
+                }
+
+                tarimasResult.Add(tarimaDto);
+            }
+
+            return tarimasResult;
         }
 
         public async Task<TarimaDTO> UpdateTarimaParcialAsync(TarimaUpdateParcialDTO dto, string usuario)
@@ -408,5 +483,125 @@ namespace AppAPIEmpacadora.Services
                 throw;
             }
         }
+
+        public async Task<List<PedidoClienteResponseDTO>> BuscarPedidosCompatiblesAsync(List<TarimaAsignacionRequestDTO> tarimasAsignacion)
+        {
+            if (tarimasAsignacion == null || !tarimasAsignacion.Any())
+            {
+                throw new ArgumentException("La lista de tarimas para asignación no puede estar vacía");
+            }
+
+            // 1. Agrupar tarimas por tipo y producto, sumando cantidades
+            var tarimasAgrupadas = tarimasAsignacion
+                .GroupBy(t => new { t.Tipo, t.IdProducto })
+                .Select(g => new
+                {
+                    Tipo = g.Key.Tipo,
+                    IdProducto = g.Key.IdProducto,
+                    CantidadTotal = g.Sum(t => t.Cantidad)
+                })
+                .ToList();
+
+            // 2. Obtener pedidos con estatus "Pendiente" o "Surtiendo"
+            var pedidosValidos = await _context.PedidosCliente
+                .Include(pc => pc.Sucursal)
+                .Include(pc => pc.Cliente)
+                .Include(pc => pc.OrdenesPedidoCliente)
+                .Where(pc => (pc.Estatus == "Pendiente" || pc.Estatus == "Surtiendo") && pc.Activo)
+                .ToListAsync();
+
+            var pedidosCompletos = new List<PedidoClienteResponseDTO>();
+
+            // 3. Para cada pedido, verificar si es compatible con TODOS los grupos de tarimas
+            foreach (var pedido in pedidosValidos)
+            {
+                bool esCompatibleConTodosLosGrupos = true;
+
+                // Verificar compatibilidad con cada grupo de tarimas
+                foreach (var grupoTarimas in tarimasAgrupadas)
+                {
+                    // 4. Filtrar órdenes que coincidan con el tipo y ID de producto
+                    var ordenesCoincidentes = pedido.OrdenesPedidoCliente
+                        .Where(o => o.Tipo == grupoTarimas.Tipo && o.IdProducto == grupoTarimas.IdProducto)
+                        .ToList();
+
+                    if (!ordenesCoincidentes.Any())
+                    {
+                        esCompatibleConTodosLosGrupos = false;
+                        break;
+                    }
+
+                    // 5. Calcular cantidad disponible por surtir en las órdenes
+                    var cantidadDisponible = ordenesCoincidentes.Sum(o => o.Cantidad ?? 0);
+
+                    // 6. Validar que la cantidad disponible sea mayor o igual a la cantidad de tarimas
+                    if (cantidadDisponible < grupoTarimas.CantidadTotal)
+                    {
+                        esCompatibleConTodosLosGrupos = false;
+                        break;
+                    }
+                }
+
+                // 7. Solo agregar el pedido si es compatible con TODOS los grupos de tarimas
+                if (esCompatibleConTodosLosGrupos)
+                {
+                    var pedidoDTO = new PedidoClienteResponseDTO
+                    {
+                        Id = pedido.Id,
+                        Observaciones = pedido.Observaciones,
+                        Estatus = pedido.Estatus,
+                        FechaEmbarque = pedido.FechaEmbarque,
+                        FechaModificacion = pedido.FechaModificacion,
+                        FechaRegistro = pedido.FechaRegistro,
+                        UsuarioRegistro = pedido.UsuarioRegistro,
+                        Activo = pedido.Activo,
+                        Sucursal = pedido.Sucursal?.Nombre ?? "N/A",
+                        Cliente = pedido.Cliente?.RazonSocial ?? "N/A",
+                        PorcentajeSurtido = pedido.PorcentajeSurtido
+                    };
+
+                    pedidosCompletos.Add(pedidoDTO);
+                }
+            }
+
+            // 8. Retornar la lista de pedidos compatibles
+            return pedidosCompletos;
+        }
+
+        public async Task<bool> EliminarTarimaClasificacionAsync(int idTarima, int idClasificacion)
+        {
+            try
+            {
+                // Consultar la tarima con sus relaciones
+                var tarima = await _tarimaRepository.GetByIdAsync(idTarima);
+                if (tarima == null) return false;
+                // Validar colecciones del repositorio
+                if (tarima.TarimasClasificaciones?.Count == 1)
+                {
+                    // Eliminar la tarima y todas sus relaciones
+                    var resultado = await _tarimaRepository.DeleteAsync(idTarima);
+                    if(!resultado) return false;
+                    
+                }else{
+                    // Eliminar la relación tarima-clasificación especifica
+                    var resultado = await _tarimaRepository.DeleteTarimaClasificacionAsync(idTarima, idClasificacion);
+                    if(!resultado) return false;
+                }
+
+                // Validar si existia la relación PedidoTarima
+                if(tarima.PedidoTarimas?.Any() == true)
+                {
+                    // Actualizar el porcentaje de surtido del pedido
+                    var pedidoClienteService = _serviceProvider.GetRequiredService<IPedidoClienteService>();
+                    await pedidoClienteService.ActualizarPorcentajeSurtidoAsync(tarima.PedidoTarimas.First().IdPedidoCliente);
+                }    
+                
+                return true;
+            }catch(Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+        }
+
     }
 } 

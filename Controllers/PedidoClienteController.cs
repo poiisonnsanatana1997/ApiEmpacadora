@@ -1,9 +1,7 @@
-using System;
 using AppAPIEmpacadora.Models.DTOs;
 using AppAPIEmpacadora.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Cors;
 
 namespace AppAPIEmpacadora.Controllers
 {
@@ -76,10 +74,21 @@ namespace AppAPIEmpacadora.Controllers
         [HttpPatch("{id}/estatus")]
         public async Task<ActionResult> UpdateEstatus(int id, [FromBody] UpdateEstatusPedidoClienteDTO dto)
         {
-            var usuario = User.Identity?.Name ?? "sistema";
-            var ok = await _service.ActualizarEstatusAsync(id, dto.Estatus, usuario);
-            if (!ok) return NotFound();
-            return NoContent();
+            try
+            {
+                var usuario = User.Identity?.Name ?? "sistema";
+                var ok = await _service.ActualizarEstatusAsync(id, dto.Estatus, usuario);
+                if (!ok) return NotFound();
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor al actualizar el estatus del pedido");
+            }
         }
         
         [HttpDelete("{id}")]
@@ -100,6 +109,85 @@ namespace AppAPIEmpacadora.Controllers
 
             var resultado = await _service.ObtenerDisponiblesPorTipoAsync(tipo, idProducto);
             return Ok(resultado);
+        }
+
+        [HttpGet("{idPedido}/disponibilidad-cajas")]
+        public async Task<ActionResult<PedidoClientePorAsignarDTO>> GetDisponibilidadCajasPorPedido(
+            int idPedido, 
+            [FromQuery] string tipo, 
+            [FromQuery] int? idProducto = null)
+        {
+            if (string.IsNullOrWhiteSpace(tipo))
+            {
+                return BadRequest("El tipo es requerido");
+            }
+
+            var resultado = await _service.ObtenerDisponibilidadCajasPorPedidoAsync(idPedido, tipo, idProducto);
+            if (resultado == null)
+            {
+                return NotFound("No se encontró el pedido o no cumple con los criterios especificados");
+            }
+            
+            return Ok(resultado);
+        }
+
+        [HttpPost("{pedidoId}/asignar-tarimas")]
+        public async Task<ActionResult<PedidoClienteResponseDTO>> AsignarTarimasYCalcularSurtido(
+            int pedidoId, 
+            [FromBody] List<int> tarimaIds)
+        {
+            if (tarimaIds == null || !tarimaIds.Any())
+            {
+                return BadRequest("Se requiere una lista de tarimas para asignar");
+            }
+
+            try
+            {
+                var usuario = User.Identity?.Name ?? "sistema";
+                var resultado = await _service.AsignarTarimasYCalcularSurtidoAsync(pedidoId, tarimaIds, usuario);
+                return Ok(resultado);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
+        }
+
+        [HttpDelete("desasignar-tarimas")]
+        public async Task<ActionResult> DesasignarTarimas(
+            [FromBody] List<DesasignacionTarimaDTO> desasignaciones)
+        {
+            if (desasignaciones == null || !desasignaciones.Any())
+            {
+                return BadRequest("Se requiere una lista de desasignaciones para realizar");
+            }
+
+            try
+            {
+                var usuario = User.Identity?.Name ?? "sistema";
+                await _service.DesasignarTarimasAsync(desasignaciones, usuario);
+                return NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, "Error interno del servidor");
+            }
         }
     }
 } 

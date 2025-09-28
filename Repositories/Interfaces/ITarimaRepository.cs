@@ -12,14 +12,13 @@ namespace AppAPIEmpacadora.Repositories.Interfaces
         Task<Tarima> UpdateAsync(Tarima tarima);
         Task<bool> DeleteAsync(int id);
         Task<IEnumerable<Tarima>> GetTarimasParcialesAsync();
-        
-        // Nuevos métodos para actualización parcial
+        Task<IEnumerable<Tarima>> GetTarimasParcialesYCompletasAsync();
         Task<TarimaClasificacion> GetTarimaClasificacionAsync(int idTarima, int idClasificacion);
         Task<TarimaClasificacion> CreateTarimaClasificacionAsync(TarimaClasificacion tarimaClasificacion);
         Task<TarimaClasificacion> UpdateTarimaClasificacionAsync(TarimaClasificacion tarimaClasificacion);
-        
-        // Método para obtener tarimas con clasificaciones incluidas
         Task<IEnumerable<Tarima>> GetAllWithClasificacionesAsync();
         Task<Tarima> GetByIdWithClasificacionesAsync(int id);
+        Task<IEnumerable<dynamic>> GetDatosResumenDiarioAsync(DateTime fechaInicio, DateTime fechaFin);
+        Task<bool> DeleteTarimaClasificacionAsync(int idTarima, int idClasificacion);
     }
 } 

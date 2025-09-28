@@ -33,6 +33,7 @@ namespace AppAPIEmpacadora.Infrastructure.Data
         public DbSet<Retorno> Retornos { get; set; }
         public DbSet<PedidoTarima> PedidoTarimas { get; set; }
         public DbSet<Caja> Cajas { get; set; }
+        public DbSet<TarimaResumenDiario> TarimaResumenDiarios { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -278,19 +279,21 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.Property(tc => tc.Cantidad).HasColumnType("decimal(18,2)");
                 entity.HasOne(tc => tc.Tarima)
                     .WithMany(t => t.TarimasClasificaciones)
-                    .HasForeignKey(tc => tc.IdTarima);
+                    .HasForeignKey(tc => tc.IdTarima)
+                    .OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(tc => tc.Clasificacion)
                     .WithMany(c => c.TarimasClasificaciones)
-                    .HasForeignKey(tc => tc.IdClasificacion);
+                    .HasForeignKey(tc => tc.IdClasificacion)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Configuración de la tabla CajaCliente
             modelBuilder.Entity<CajaCliente>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.Property(e => e.Nombre).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Nombre).HasMaxLength(50);
                 entity.Property(e => e.Peso).IsRequired().HasColumnType("decimal(18, 2)");
-                entity.Property(e => e.Precio).IsRequired().HasColumnType("decimal(18, 2)");
+                entity.Property(e => e.Precio).HasColumnType("decimal(18, 2)");
 
                 // Relación con Cliente
                 entity.HasOne(cc => cc.Cliente)
@@ -378,10 +381,12 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                 entity.HasKey(e => new { e.IdPedidoCliente, e.IdTarima });
                 entity.HasOne(pt => pt.PedidoCliente)
                     .WithMany(pc => pc.PedidoTarimas)
-                    .HasForeignKey(pt => pt.IdPedidoCliente);
+                    .HasForeignKey(pt => pt.IdPedidoCliente)
+                    .OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(pt => pt.Tarima)
                     .WithMany(t => t.PedidoTarimas)
-                    .HasForeignKey(pt => pt.IdTarima);
+                    .HasForeignKey(pt => pt.IdTarima)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Configuración de la tabla Caja
@@ -399,6 +404,28 @@ namespace AppAPIEmpacadora.Infrastructure.Data
                     .WithMany()
                     .HasForeignKey(c => c.IdClasificacion)
                     .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Configuración de la tabla TarimaResumenDiario
+            modelBuilder.Entity<TarimaResumenDiario>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Fecha).IsRequired();
+                entity.Property(e => e.Tipo).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.CantidadTarimas).IsRequired();
+                entity.Property(e => e.CantidadTotal).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.PesoTotal).IsRequired().HasColumnType("decimal(18,2)");
+                entity.Property(e => e.TarimasCompletas).IsRequired();
+                entity.Property(e => e.TarimasParciales).IsRequired();
+                entity.Property(e => e.FechaRegistro).IsRequired();
+                entity.Property(e => e.UsuarioRegistro).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.UltimaActualizacion).IsRequired();
+                entity.Property(e => e.UsuarioUltimaActualizacion).HasMaxLength(50);
+                
+                // Índices
+                entity.HasIndex(e => new { e.Fecha, e.Tipo }).IsUnique();
+                entity.HasIndex(e => e.Fecha);
+                entity.HasIndex(e => e.Tipo);
             });
         }
     }

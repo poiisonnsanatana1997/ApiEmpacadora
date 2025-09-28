@@ -41,10 +41,6 @@ namespace AppAPIEmpacadora.Controllers
         public async Task<ActionResult<IEnumerable<CajaDTO>>> GetCajasPorClasificacion(int idClasificacion)
         {
             var cajas = await _cajaService.GetCajasByClasificacionAsync(idClasificacion);
-            if (!cajas.Any())
-            {
-                return NotFound($"No se encontraron cajas para la clasificación con ID: {idClasificacion}");
-            }
             return Ok(cajas);
         }
 

@@ -1,5 +1,6 @@
 using AppAPIEmpacadora.Models.DTOs;
 using AppAPIEmpacadora.Models.Entities;
+using AppAPIEmpacadora.Models.Exceptions;
 using AppAPIEmpacadora.Repositories.Interfaces;
 using AppAPIEmpacadora.Services.Interfaces;
 using Microsoft.AspNetCore.Hosting;
@@ -7,6 +8,8 @@ using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using System;
+using System.Linq;
 
 namespace AppAPIEmpacadora.Services
 {
@@ -15,48 +18,66 @@ namespace AppAPIEmpacadora.Services
         private readonly IClienteRepository _clienteRepository;
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILoggingService _loggingService;
 
         public ClienteService(
-            IClienteRepository clienteRepository, 
-            IWebHostEnvironment hostingEnvironment, 
-            IHttpContextAccessor httpContextAccessor)
+            IClienteRepository clienteRepository,
+            IWebHostEnvironment hostingEnvironment,
+            IHttpContextAccessor httpContextAccessor,
+            ILoggingService loggingService)
         {
             _clienteRepository = clienteRepository;
             _hostingEnvironment = hostingEnvironment;
             _httpContextAccessor = httpContextAccessor;
+            _loggingService = loggingService;
         }
 
         public async Task<IEnumerable<ClienteSummaryDTO>> GetClientesAsync()
         {
-            var clientes = await _clienteRepository.GetAllAsync();
-            var clienteDTOs = new List<ClienteSummaryDTO>();
-            foreach (var cliente in clientes)
+            try
             {
-                clienteDTOs.Add(new ClienteSummaryDTO
+                _loggingService.LogInformation("Iniciando obtención de lista de clientes");
+                
+                var clientes = await _clienteRepository.GetAllAsync();
+                var clienteDTOs = new List<ClienteSummaryDTO>();
+                
+                foreach (var cliente in clientes)
                 {
-                    Id = cliente.Id,
-                    Nombre = cliente.Nombre,
-                    RazonSocial = cliente.RazonSocial,
-                    Rfc = cliente.Rfc,
-                    Activo = cliente.Activo,
-                    FechaRegistro = cliente.FechaRegistro
-                });
+                    clienteDTOs.Add(new ClienteSummaryDTO
+                    {
+                        Id = cliente.Id,
+                        Nombre = cliente.Nombre,
+                        RazonSocial = cliente.RazonSocial,
+                        Rfc = cliente.Rfc,
+                        Telefono = cliente.Telefono,
+                        Correo = cliente.Correo,
+                        Activo = cliente.Activo,
+                        FechaRegistro = cliente.FechaRegistro
+                    });
+                }
+                
+                _loggingService.LogInformation("Lista de clientes obtenida exitosamente. Total: {Count}", clienteDTOs.Count);
+                return clienteDTOs;
             }
-            return clienteDTOs;
+            catch (Exception ex)
+            {
+                _loggingService.LogError("Error en GetClientesAsync", ex);
+                throw;
+            }
         }
 
         public async Task<IEnumerable<ClienteDTO>> GetClientesDetalladosAsync()
         {
             var clientes = await _clienteRepository.GetAllAsync();
             var clienteDTOs = new List<ClienteDTO>();
-            
+
             var request = _httpContextAccessor.HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
 
             foreach (var cliente in clientes)
             {
-                var constanciaUrl = string.IsNullOrEmpty(cliente.ConstanciaFiscal) 
-                    ? null 
+                var constanciaUrl = string.IsNullOrEmpty(cliente.ConstanciaFiscal)
+                    ? null
                     : $"{baseUrl}/{cliente.ConstanciaFiscal.Replace("\\", "/")}";
 
                 clienteDTOs.Add(new ClienteDTO
@@ -68,6 +89,8 @@ namespace AppAPIEmpacadora.Services
                     ConstanciaFiscal = constanciaUrl,
                     RepresentanteComercial = cliente.RepresentanteComercial,
                     TipoCliente = cliente.TipoCliente,
+                    Telefono = cliente.Telefono,
+                    Correo = cliente.Correo,
                     Activo = cliente.Activo,
                     FechaRegistro = cliente.FechaRegistro,
                     UsuarioRegistro = cliente.UsuarioRegistro,
@@ -89,7 +112,7 @@ namespace AppAPIEmpacadora.Services
                         Peso = c.Peso,
                         Precio = c.Precio,
                         IdCliente = c.IdCliente,
-                        NombreCliente = cliente.Nombre 
+                        NombreCliente = cliente.Nombre
                     }).ToList()
                 });
             }
@@ -103,8 +126,8 @@ namespace AppAPIEmpacadora.Services
 
             var request = _httpContextAccessor.HttpContext.Request;
             var baseUrl = $"{request.Scheme}://{request.Host}";
-            var constanciaUrl = string.IsNullOrEmpty(cliente.ConstanciaFiscal) 
-                ? null 
+            var constanciaUrl = string.IsNullOrEmpty(cliente.ConstanciaFiscal)
+                ? null
                 : $"{baseUrl}/{cliente.ConstanciaFiscal.Replace("\\", "/")}";
 
             return new ClienteDTO
@@ -116,6 +139,8 @@ namespace AppAPIEmpacadora.Services
                 ConstanciaFiscal = constanciaUrl,
                 RepresentanteComercial = cliente.RepresentanteComercial,
                 TipoCliente = cliente.TipoCliente,
+                Telefono = cliente.Telefono,
+                Correo = cliente.Correo,
                 Activo = cliente.Activo,
                 FechaRegistro = cliente.FechaRegistro,
                 UsuarioRegistro = cliente.UsuarioRegistro,
@@ -137,60 +162,91 @@ namespace AppAPIEmpacadora.Services
                     Peso = c.Peso,
                     Precio = c.Precio,
                     IdCliente = c.IdCliente,
-                    NombreCliente = cliente.Nombre 
+                    NombreCliente = cliente.Nombre
                 }).ToList()
             };
         }
 
         public async Task<ClienteDTO> CreateClienteAsync(CreateClienteDTO createClienteDto, string usuario)
         {
-            string pathConstancia = null;
-            if (createClienteDto.ConstanciaFiscal != null)
+            try
             {
-                var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "uploads", "constancias");
-                if (!Directory.Exists(uploadsFolder))
+                _loggingService.LogUserAction("Crear cliente", usuario, $"Nombre: {createClienteDto.Nombre}");
+                
+                string pathConstancia = null;
+                if (createClienteDto.ConstanciaFiscal != null)
                 {
-                    Directory.CreateDirectory(uploadsFolder);
+                    try
+                    {
+                        var uploadsFolder = Path.Combine(_hostingEnvironment.WebRootPath, "uploads", "constancias");
+                        if (!Directory.Exists(uploadsFolder))
+                        {
+                            Directory.CreateDirectory(uploadsFolder);
+                            _loggingService.LogInformation("Directorio de constancias creado: {Path}", uploadsFolder);
+                        }
+
+                        var uniqueFileName = Guid.NewGuid().ToString() + "_" + createClienteDto.ConstanciaFiscal.FileName;
+                        var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await createClienteDto.ConstanciaFiscal.CopyToAsync(stream);
+                        }
+                        pathConstancia = Path.Combine("uploads", "constancias", uniqueFileName).Replace('\\', '/');
+                        
+                        _loggingService.LogFileOperation("Crear", uniqueFileName, usuario);
+                    }
+                    catch (Exception ex)
+                    {
+                        _loggingService.LogError("Error al procesar archivo de constancia fiscal", ex);
+                        throw new FileOperationException("Error al procesar el archivo de constancia fiscal", ex);
+                    }
                 }
 
-                var uniqueFileName = Guid.NewGuid().ToString() + "_" + createClienteDto.ConstanciaFiscal.FileName;
-                var filePath = Path.Combine(uploadsFolder, uniqueFileName);
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
+                var cliente = new Cliente
                 {
-                    await createClienteDto.ConstanciaFiscal.CopyToAsync(stream);
-                }
-                pathConstancia = Path.Combine("uploads", "constancias", uniqueFileName).Replace('\\', '/');
+                    Nombre = createClienteDto.Nombre,
+                    RazonSocial = createClienteDto.RazonSocial,
+                    Rfc = createClienteDto.Rfc,
+                    ConstanciaFiscal = pathConstancia,
+                    RepresentanteComercial = createClienteDto.RepresentanteComercial,
+                    TipoCliente = createClienteDto.TipoCliente,
+                    Telefono = createClienteDto.Telefono,
+                    Correo = createClienteDto.Correo,
+                    Activo = createClienteDto.Activo,
+                    FechaRegistro = createClienteDto.FechaRegistro,
+                    UsuarioRegistro = usuario
+                };
+
+                var nuevoCliente = await _clienteRepository.AddAsync(cliente);
+
+                _loggingService.LogInformation("Cliente creado exitosamente con ID {Id} por usuario {Usuario}", nuevoCliente.Id, usuario);
+
+                return new ClienteDTO
+                {
+                    Id = nuevoCliente.Id,
+                    Nombre = nuevoCliente.Nombre,
+                    RazonSocial = nuevoCliente.RazonSocial,
+                    Rfc = nuevoCliente.Rfc,
+                    ConstanciaFiscal = nuevoCliente.ConstanciaFiscal,
+                    RepresentanteComercial = nuevoCliente.RepresentanteComercial,
+                    TipoCliente = nuevoCliente.TipoCliente,
+                    Telefono = nuevoCliente.Telefono,
+                    Correo = nuevoCliente.Correo,
+                    Activo = nuevoCliente.Activo,
+                    FechaRegistro = nuevoCliente.FechaRegistro,
+                    UsuarioRegistro = nuevoCliente.UsuarioRegistro
+                };
             }
-
-            var cliente = new Cliente
+            catch (FileOperationException)
             {
-                Nombre = createClienteDto.Nombre,
-                RazonSocial = createClienteDto.RazonSocial,
-                Rfc = createClienteDto.Rfc,
-                ConstanciaFiscal = pathConstancia,
-                RepresentanteComercial = createClienteDto.RepresentanteComercial,
-                TipoCliente = createClienteDto.TipoCliente,
-                Activo = createClienteDto.Activo,
-                FechaRegistro = createClienteDto.FechaRegistro,
-                UsuarioRegistro = usuario
-            };
-
-            var nuevoCliente = await _clienteRepository.AddAsync(cliente);
-
-            return new ClienteDTO
+                throw;
+            }
+            catch (Exception ex)
             {
-                Id = nuevoCliente.Id,
-                Nombre = nuevoCliente.Nombre,
-                RazonSocial = nuevoCliente.RazonSocial,
-                Rfc = nuevoCliente.Rfc,
-                ConstanciaFiscal = nuevoCliente.ConstanciaFiscal,
-                RepresentanteComercial = nuevoCliente.RepresentanteComercial,
-                TipoCliente = nuevoCliente.TipoCliente,
-                Activo = nuevoCliente.Activo,
-                FechaRegistro = nuevoCliente.FechaRegistro,
-                UsuarioRegistro = nuevoCliente.UsuarioRegistro
-            };
+                _loggingService.LogError("Error al crear cliente", ex);
+                throw;
+            }
         }
 
         public async Task<ClienteDTO> UpdateClienteAsync(int id, UpdateClienteDTO updateClienteDto)
@@ -227,6 +283,8 @@ namespace AppAPIEmpacadora.Services
             if (updateClienteDto.Rfc != null) cliente.Rfc = updateClienteDto.Rfc;
             if (updateClienteDto.RepresentanteComercial != null) cliente.RepresentanteComercial = updateClienteDto.RepresentanteComercial;
             if (updateClienteDto.TipoCliente != null) cliente.TipoCliente = updateClienteDto.TipoCliente;
+            if (updateClienteDto.Telefono != null) cliente.Telefono = updateClienteDto.Telefono;
+            if (updateClienteDto.Correo != null) cliente.Correo = updateClienteDto.Correo;
             if (updateClienteDto.Activo.HasValue) cliente.Activo = updateClienteDto.Activo.Value;
 
             var clienteActualizado = await _clienteRepository.UpdateAsync(cliente);
@@ -240,6 +298,8 @@ namespace AppAPIEmpacadora.Services
                 ConstanciaFiscal = clienteActualizado.ConstanciaFiscal,
                 RepresentanteComercial = clienteActualizado.RepresentanteComercial,
                 TipoCliente = clienteActualizado.TipoCliente,
+                Telefono = clienteActualizado.Telefono,
+                Correo = clienteActualizado.Correo,
                 Activo = clienteActualizado.Activo,
                 FechaRegistro = clienteActualizado.FechaRegistro,
                 UsuarioRegistro = clienteActualizado.UsuarioRegistro
@@ -251,4 +311,4 @@ namespace AppAPIEmpacadora.Services
             return await _clienteRepository.DeleteAsync(id);
         }
     }
-} 
+}

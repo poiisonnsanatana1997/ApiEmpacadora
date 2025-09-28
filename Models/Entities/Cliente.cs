@@ -23,14 +23,22 @@ namespace AppAPIEmpacadora.Models.Entities
         public string Rfc { get; set; }
 
         [StringLength(250)]
-        public string ConstanciaFiscal { get; set; }
+        public string? ConstanciaFiscal { get; set; }
 
         [StringLength(50)]
-        public string RepresentanteComercial { get; set; }
+        public string? RepresentanteComercial { get; set; }
 
         [StringLength(50)]
-        public string TipoCliente { get; set; }
+        public string? TipoCliente { get; set; }
 
+        [Required]
+        [StringLength(20)]
+        public string Telefono { get; set; }
+
+        [StringLength(100)]
+        public string? Correo { get; set; }
+
+        [Required]
         public bool Activo { get; set; }
 
         [Required]

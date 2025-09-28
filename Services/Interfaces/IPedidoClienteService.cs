@@ -16,8 +16,11 @@ namespace AppAPIEmpacadora.Services.Interfaces
         Task<IEnumerable<PedidoClienteConDetallesDTO>> ObtenerTodosConDetallesAsync();
         Task<bool> ActualizarEstatusAsync(int id, string estatus, string usuarioModificacion);
         Task<IEnumerable<PedidoClientePorAsignarDTO>> ObtenerDisponiblesPorTipoAsync(string tipo, int? idProducto = null);
+        Task<PedidoClientePorAsignarDTO> ObtenerDisponibilidadCajasPorPedidoAsync(int idPedido, string tipo, int? idProducto = null);
         Task<PedidoClienteProgresoDTO> ObtenerProgresoAsync(int id);
         Task<decimal> CalcularPorcentajeSurtidoAsync(int idPedidoCliente);
         Task<bool> ActualizarPorcentajeSurtidoAsync(int idPedidoCliente);
+        Task<PedidoClienteResponseDTO> AsignarTarimasYCalcularSurtidoAsync(int pedidoId, List<int> tarimaIds, string usuario);
+        Task DesasignarTarimasAsync(List<DesasignacionTarimaDTO> desasignaciones, string usuario);
     }
 } 

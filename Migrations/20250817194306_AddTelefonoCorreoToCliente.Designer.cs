@@ -4,6 +4,7 @@ using AppAPIEmpacadora.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AppAPIEmpacadora.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250817194306_AddTelefonoCorreoToCliente")]
+    partial class AddTelefonoCorreoToCliente
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -203,10 +206,12 @@ namespace AppAPIEmpacadora.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("ConstanciaFiscal")
+                        .IsRequired()
                         .HasMaxLength(250)
                         .HasColumnType("nvarchar(250)");
 
                     b.Property<string>("Correo")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -224,6 +229,7 @@ namespace AppAPIEmpacadora.Migrations
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("RepresentanteComercial")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -238,6 +244,7 @@ namespace AppAPIEmpacadora.Migrations
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("TipoCliente")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -837,64 +844,6 @@ namespace AppAPIEmpacadora.Migrations
                     b.HasIndex("IdClasificacion");
 
                     b.ToTable("TarimaClasificaciones");
-                });
-
-            modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.TarimaResumenDiario", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("CantidadTarimas")
-                        .HasColumnType("int");
-
-                    b.Property<decimal>("CantidadTotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<DateTime>("Fecha")
-                        .HasColumnType("date");
-
-                    b.Property<DateTime>("FechaRegistro")
-                        .HasColumnType("datetime2");
-
-                    b.Property<decimal>("PesoTotal")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<int>("TarimasCompletas")
-                        .HasColumnType("int");
-
-                    b.Property<int>("TarimasParciales")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Tipo")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime>("UltimaActualizacion")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UsuarioRegistro")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("UsuarioUltimaActualizacion")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("Fecha");
-
-                    b.HasIndex("Tipo");
-
-                    b.HasIndex("Fecha", "Tipo")
-                        .IsUnique();
-
-                    b.ToTable("TarimaResumenDiarios");
                 });
 
             modelBuilder.Entity("AppAPIEmpacadora.Models.Entities.User", b =>

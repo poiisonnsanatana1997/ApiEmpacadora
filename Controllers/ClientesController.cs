@@ -67,14 +67,15 @@ namespace AppAPIEmpacadora.Controllers
             {
                 return NotFound();
             }
-            return NoContent();
+            return Ok(clienteActualizado);
         }
 
         [HttpDelete("{id}")]
+        [Authorize]
         public async Task<IActionResult> DeleteCliente(int id)
         {
-            var result = await _clienteService.DeleteClienteAsync(id);
-            if (!result)
+            var resultado = await _clienteService.DeleteClienteAsync(id);
+            if (!resultado)
             {
                 return NotFound();
             }
