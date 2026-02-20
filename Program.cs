@@ -100,6 +100,7 @@ builder.Services.AddScoped<IOrdenPedidoClienteService, OrdenPedidoClienteService
 builder.Services.AddScoped<IMermaService, MermaService>();
 builder.Services.AddScoped<IRetornoService, RetornoService>();
 builder.Services.AddScoped<ICajaService, CajaService>();
+builder.Services.AddScoped<IReporteServices, ReporteServices>();
 
 // Registro de servicios para reportes de tarimas
 builder.Services.AddScoped<ITarimaResumenRepository, TarimaResumenRepository>();
