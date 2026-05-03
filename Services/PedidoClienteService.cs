@@ -249,7 +249,31 @@ namespace AppAPIEmpacadora.Services
 
                 // Obtener la orden del tipo específico
                 var orden = pedido.OrdenesPedidoCliente.FirstOrDefault(o => o.Tipo == tipo);
-                if (orden == null) continue;
+
+                // Pedidos sin órdenes no tienen restricción de compatibilidad
+                if (orden == null)
+                {
+                    resultado.Add(new PedidoClientePorAsignarDTO
+                    {
+                        Id = pedido.Id,
+                        Tipo = tipo,
+                        Cantidad = 0,
+                        Peso = 0,
+                        PesoCajaCliente = pedido.Cliente?.CajasCliente?.FirstOrDefault()?.Peso ?? 0,
+                        Producto = new ProductoSimpleDTO(),
+                        Cliente = new ClienteSummaryDTO
+                        {
+                            Id = pedido.Cliente?.Id ?? 0,
+                            RazonSocial = pedido.Cliente?.RazonSocial ?? string.Empty
+                        },
+                        Sucursal = new SucursalSummaryDTO
+                        {
+                            Id = pedido.Sucursal?.Id ?? 0,
+                            Nombre = pedido.Sucursal?.Nombre ?? string.Empty
+                        }
+                    });
+                    continue;
+                }
 
                 // Validación: Filtrar por ID de producto si se especifica
                 if (idProducto.HasValue && orden.IdProducto != idProducto.Value)

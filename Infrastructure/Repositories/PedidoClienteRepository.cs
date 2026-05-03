@@ -94,7 +94,8 @@ namespace AppAPIEmpacadora.Infrastructure.Repositories
                 .Include(p => p.PedidoTarimas)
                     .ThenInclude(pt => pt.Tarima)
                         .ThenInclude(t => t.TarimasClasificaciones.Where(tc => tc.Tipo == tipo))
-                .Where(p => p.OrdenesPedidoCliente.Any(o => o.Tipo == tipo))
+                .Where(p => p.OrdenesPedidoCliente.Any(o => o.Tipo == tipo)
+                         || !p.OrdenesPedidoCliente.Any())
                 .ToListAsync();
         }
 

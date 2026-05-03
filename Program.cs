@@ -63,8 +63,9 @@ builder.Services.AddSwaggerGen(c =>
 });
 
 // Configuración de la base de datos
+AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Registro de repositorios
 builder.Services.AddScoped<IUserRepository, UserRepository>();

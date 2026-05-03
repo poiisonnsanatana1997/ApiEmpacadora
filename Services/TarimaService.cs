@@ -515,6 +515,26 @@ namespace AppAPIEmpacadora.Services
             // 3. Para cada pedido, verificar si es compatible con TODOS los grupos de tarimas
             foreach (var pedido in pedidosValidos)
             {
+                // Pedidos sin órdenes no tienen restricción de compatibilidad
+                if (!pedido.OrdenesPedidoCliente.Any())
+                {
+                    pedidosCompletos.Add(new PedidoClienteResponseDTO
+                    {
+                        Id = pedido.Id,
+                        Observaciones = pedido.Observaciones,
+                        Estatus = pedido.Estatus,
+                        FechaEmbarque = pedido.FechaEmbarque,
+                        FechaModificacion = pedido.FechaModificacion,
+                        FechaRegistro = pedido.FechaRegistro,
+                        UsuarioRegistro = pedido.UsuarioRegistro,
+                        Activo = pedido.Activo,
+                        Sucursal = pedido.Sucursal?.Nombre ?? "N/A",
+                        Cliente = pedido.Cliente?.RazonSocial ?? "N/A",
+                        PorcentajeSurtido = pedido.PorcentajeSurtido
+                    });
+                    continue;
+                }
+
                 bool esCompatibleConTodosLosGrupos = true;
 
                 // Verificar compatibilidad con cada grupo de tarimas
